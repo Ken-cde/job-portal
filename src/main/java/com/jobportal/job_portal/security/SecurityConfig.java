@@ -54,13 +54,14 @@ public class SecurityConfig {
 
                         // Swagger FIRST
                         .requestMatchers(
+                                "/",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html"
                         ).permitAll()
 
                         // Auth
-                        .requestMatchers("/").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
 
                         // Dashboards
                         .requestMatchers("/dashboard/admin").hasRole("ADMIN")
