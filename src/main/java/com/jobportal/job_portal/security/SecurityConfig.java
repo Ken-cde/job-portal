@@ -60,7 +60,7 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // Auth
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/").permitAll()
 
                         // Dashboards
                         .requestMatchers("/dashboard/admin").hasRole("ADMIN")
