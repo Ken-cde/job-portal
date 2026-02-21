@@ -84,6 +84,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.jobportal.job_portal.JobPortalApplication</mainClass>
+                </configuration>
             </plugin>
 
         </plugins>
