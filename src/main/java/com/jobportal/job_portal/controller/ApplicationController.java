@@ -54,19 +54,19 @@ public class ApplicationController {
         }
 
         // ===== SAVE FILE =====
-//        String uploadDir = "uploads/resumes/";
-//        Files.createDirectories(Paths.get(uploadDir));
-//
-//        String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-//        Path path = Paths.get(uploadDir + filename);
-//
-//        Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+        String uploadDir = "uploads/resumes/";
+        Files.createDirectories(Paths.get(uploadDir));
+
+        String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        Path path = Paths.get(uploadDir + filename);
+
+        Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 
         // ===== SAVE APPLICATION =====
         Application app = new Application();
         app.setUser(user);
         app.setJob(job);
-//        app.setResumePath(path.toString());
+        app.setResumePath(path.toString());
         app.setResumePath(file.getOriginalFilename());
 
         applicationRepository.save(app);
