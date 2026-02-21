@@ -42,33 +42,38 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(basic -> basic.disable())
                 .formLogin(form -> form.disable())
+
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler(accessDeniedHandler)
                 )
+
                 .authorizeHttpRequests(auth -> auth
+
+                        // Swagger FIRST
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+
+                        // Auth
                         .requestMatchers("/auth/**").permitAll()
 
+                        // Dashboards
                         .requestMatchers("/dashboard/admin").hasRole("ADMIN")
                         .requestMatchers("/dashboard/employer").hasRole("EMPLOYER")
                         .requestMatchers("/dashboard/candidate").hasRole("CANDIDATE")
 
+                        // LAST LINE — NOTHING after this
                         .anyRequest().authenticated()
                 )
-
 
                 // JWT filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 }
