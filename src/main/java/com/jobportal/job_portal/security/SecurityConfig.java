@@ -55,9 +55,11 @@ public class SecurityConfig {
                         // Swagger FIRST
                         .requestMatchers(
                                 "/",
+                                "/error",
                                 "/swagger-ui/**",
+                                "/swagger-ui/index.html",
                                 "/v3/api-docs/**",
-                                "/swagger-ui/index.html"
+                                "/v3/api-docs.yaml"
                         ).permitAll()
 
                         // Auth
