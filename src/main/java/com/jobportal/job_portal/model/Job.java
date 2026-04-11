@@ -2,6 +2,7 @@ package com.jobportal.job_portal.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -18,6 +19,9 @@ public class Job {
     private String company;
     private String location;
     private Double salary;
+    private String jobType;
+    private String requirements;
+    private LocalDate deadline;
 
     // 🔥 ADD THIS
     @ManyToOne

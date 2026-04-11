@@ -9,6 +9,7 @@ import com.jobportal.job_portal.model.User;
 import com.jobportal.job_portal.repository.RoleRepository;
 import com.jobportal.job_portal.repository.UserRepository;
 import com.jobportal.job_portal.security.JwtUtil;
+import com.jobportal.job_portal.service.EmailService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,23 +23,26 @@ public class AuthController {
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final EmailService emailService;
 
     public AuthController(UserRepository userRepository,
                           RoleRepository roleRepository,
                           BCryptPasswordEncoder passwordEncoder,
-                          JwtUtil jwtUtil) {
+                          JwtUtil jwtUtil,
+                          EmailService emailService) {
 
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.emailService = emailService;
     }
 
     @PostMapping("/register")
     public String register(@RequestBody RegisterRequest request) {
 
-        Role role = roleRepository.findByName("USER")
-                .orElseThrow(() -> new RuntimeException("Role USER not found"));
+        Role role = roleRepository.findByName("CANDIDATE")
+                .orElseThrow(() -> new RuntimeException("Role CANDIDATE not found"));
 
         User user = new User();
         user.setUsername(request.getUsername());
@@ -47,6 +51,8 @@ public class AuthController {
         user.setRole(role);
 
         userRepository.save(user);
+
+        emailService.sendWelcomeEmail(user.getEmail(), user.getUsername());
 
         return "User Registered Successfully";
     }
@@ -68,7 +74,53 @@ public class AuthController {
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getUsername());
 
-        return ResponseEntity.ok(Map.of("message ","Login Successful",
-        "token:",token));
+        return ResponseEntity.ok(Map.of("message", "Login Successful",
+        "token", token, "role", user.getRole().getName()));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email is required"));
+        }
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            // Don't reveal whether email exists
+            return ResponseEntity.ok(Map.of("message", "If that email exists, a reset link has been sent"));
+        }
+
+        User user = userOpt.get();
+        String resetToken = jwtUtil.generateResetToken(user.getEmail());
+        emailService.sendPasswordResetEmail(user.getEmail(), user.getUsername(), resetToken);
+
+        return ResponseEntity.ok(Map.of("message", "If that email exists, a reset link has been sent"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        String password = body.get("password");
+
+        if (token == null || password == null || password.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Token and new password are required"));
+        }
+
+        if (!jwtUtil.validateToken(token)) {
+            return ResponseEntity.status(400).body(Map.of("message", "Reset token is invalid or expired"));
+        }
+
+        String email = jwtUtil.extractEmail(token);
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(400).body(Map.of("message", "Invalid token"));
+        }
+
+        User user = userOpt.get();
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
     }
 }

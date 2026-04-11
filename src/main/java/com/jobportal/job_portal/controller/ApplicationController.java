@@ -4,8 +4,12 @@ import com.jobportal.job_portal.dto.CandidateApplicationDTO;
 import com.jobportal.job_portal.dto.ApplicationResponseDTO;
 import com.jobportal.job_portal.model.*;
 import com.jobportal.job_portal.repository.*;
+import com.jobportal.job_portal.service.EmailService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +31,16 @@ public class ApplicationController {
     private final ApplicationRepository applicationRepository;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     public ApplicationController(ApplicationRepository applicationRepository,
                                  JobRepository jobRepository,
-                                 UserRepository userRepository) {
+                                 UserRepository userRepository,
+                                 EmailService emailService) {
         this.applicationRepository = applicationRepository;
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
     // APPLY JOB
@@ -71,27 +78,72 @@ public class ApplicationController {
 
         applicationRepository.save(app);
 
+        // Send email notification to candidate
+        emailService.sendApplicationReceived(
+            user.getEmail(),
+            job.getTitle(),
+            job.getCompany()
+        );
+
+        // Send email notification to employer
+        emailService.sendNewApplicantEmail(
+            job.getUser().getEmail(),
+            job.getTitle(),
+            user.getUsername(),
+            user.getEmail()
+        );
+
         return ResponseEntity.ok("Applied successfully");
     }
 
     // ================== CANDIDATE VIEW ==================
 
     @GetMapping("/my")
-    public List<CandidateApplicationDTO> myApplications(Authentication auth) {
+    public Page<CandidateApplicationDTO> myApplications(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            Authentication auth) {
 
         User user = userRepository.findByEmail(auth.getName()).orElseThrow();
 
-        return applicationRepository.findByUser(user)
-                .stream()
+        Pageable pageable = PageRequest.of(page, size);
+
+        return applicationRepository.findByUser(user, pageable)
                 .map(app -> new CandidateApplicationDTO(
+                        app.getJob().getId(),
                         app.getJob().getTitle(),
                         app.getJob().getCompany(),
                         app.getStatus().name()
-                ))
-                .toList();
+                ));
     }
 
     // ================= EMPLOYER / ADMIN VIEW =================
+
+    @GetMapping("/my-applicants")
+    public Page<ApplicationResponseDTO> myApplicants(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            Authentication auth) {
+
+        User user = userRepository.findByEmail(auth.getName()).orElseThrow();
+
+        List<Job> myJobs = jobRepository.findByUser(user);
+        List<Long> myJobIds = myJobs.stream().map(Job::getId).toList();
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        return applicationRepository.findAll(pageable)
+                .filter(app -> myJobIds.contains(app.getJob().getId()))
+                .map(app -> new ApplicationResponseDTO(
+                        app.getId(),
+                        app.getUser().getUsername(),
+                        app.getUser().getEmail(),
+                        app.getJob().getTitle(),
+                        app.getJob().getId(),
+                        app.getStatus().name(),
+                        app.getAppliedAt()
+                ));
+    }
 
     @GetMapping("/job/{jobId}")
     public List<ApplicationResponseDTO> applicants(@PathVariable Long jobId,
@@ -112,11 +164,84 @@ public class ApplicationController {
                 .map(app -> new ApplicationResponseDTO(
                         app.getId(),
                         app.getUser().getUsername(),
+                        app.getUser().getEmail(),
                         app.getJob().getTitle(),
+                        app.getJob().getId(),
                         app.getStatus().name(),
                         app.getAppliedAt()
                 ))
                 .toList();
+    }
+
+    // ================= GET ALL (ADMIN) =================
+
+    @GetMapping
+    public List<ApplicationResponseDTO> getAllApplications(Authentication auth) {
+        User user = userRepository.findByEmail(auth.getName()).orElseThrow();
+        if (!user.getRole().getName().equals("ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        return applicationRepository.findAll().stream()
+                .map(app -> new ApplicationResponseDTO(
+                        app.getId(),
+                        app.getUser().getUsername(),
+                        app.getUser().getEmail(),
+                        app.getJob().getTitle(),
+                        app.getJob().getId(),
+                        app.getStatus().name(),
+                        app.getAppliedAt()
+                ))
+                .toList();
+    }
+
+    // ================= REVIEW =================
+
+    @PutMapping("/{id}/review")
+    public ResponseEntity<?> review(@PathVariable Long id, Authentication auth) {
+
+        Application app = applicationRepository.findById(id)
+                .orElseThrow();
+
+        if (!app.getJob().getUser().getEmail().equals(auth.getName())
+                && !userRepository.findByEmail(auth.getName()).orElseThrow().getRole().getName().equals("ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        app.setStatus(ApplicationStatus.REVIEWED);
+        applicationRepository.save(app);
+
+        emailService.sendApplicationStatusUpdate(
+            app.getUser().getEmail(),
+            app.getJob().getTitle(),
+            "REVIEWED"
+        );
+
+        return ResponseEntity.ok("Reviewed");
+    }
+
+    // ================= INTERVIEW =================
+
+    @PutMapping("/{id}/interview")
+    public ResponseEntity<?> interview(@PathVariable Long id, Authentication auth) {
+
+        Application app = applicationRepository.findById(id)
+                .orElseThrow();
+
+        if (!app.getJob().getUser().getEmail().equals(auth.getName())
+                && !userRepository.findByEmail(auth.getName()).orElseThrow().getRole().getName().equals("ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        app.setStatus(ApplicationStatus.INTERVIEWING);
+        applicationRepository.save(app);
+
+        emailService.sendApplicationStatusUpdate(
+            app.getUser().getEmail(),
+            app.getJob().getTitle(),
+            "INTERVIEWING"
+        );
+
+        return ResponseEntity.ok("Interviewing");
     }
 
     // ================= ACCEPT =================
@@ -127,12 +252,19 @@ public class ApplicationController {
         Application app = applicationRepository.findById(id)
                 .orElseThrow();
 
-        if (!app.getJob().getUser().getEmail().equals(auth.getName())) {
+        if (!app.getJob().getUser().getEmail().equals(auth.getName())
+                && !userRepository.findByEmail(auth.getName()).orElseThrow().getRole().getName().equals("ADMIN")) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
         app.setStatus(ApplicationStatus.ACCEPTED);
         applicationRepository.save(app);
+
+        emailService.sendApplicationStatusUpdate(
+            app.getUser().getEmail(),
+            app.getJob().getTitle(),
+            "ACCEPTED"
+        );
 
         return ResponseEntity.ok("Accepted");
     }
@@ -145,14 +277,45 @@ public class ApplicationController {
         Application app = applicationRepository.findById(id)
                 .orElseThrow();
 
-        if (!app.getJob().getUser().getEmail().equals(auth.getName())) {
+        if (!app.getJob().getUser().getEmail().equals(auth.getName())
+                && !userRepository.findByEmail(auth.getName()).orElseThrow().getRole().getName().equals("ADMIN")) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
         app.setStatus(ApplicationStatus.REJECTED);
         applicationRepository.save(app);
 
+        emailService.sendApplicationStatusUpdate(
+            app.getUser().getEmail(),
+            app.getJob().getTitle(),
+            "REJECTED"
+        );
+
         return ResponseEntity.ok("Rejected");
+    }
+
+    // ================= DELETE =================
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteApplication(@PathVariable Long id, Authentication auth) {
+
+        Application app = applicationRepository.findById(id)
+                .orElseThrow();
+
+        User user = userRepository.findByEmail(auth.getName()).orElseThrow();
+
+        // Allow: owner of the application (candidate) OR owner of the job (employer) OR admin
+        boolean isCandidate = app.getUser().getId().equals(user.getId());
+        boolean isEmployer = app.getJob().getUser().getId().equals(user.getId());
+        boolean isAdmin = user.getRole().getName().equals("ADMIN");
+
+        if (!isCandidate && !isEmployer && !isAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        applicationRepository.delete(app);
+
+        return ResponseEntity.ok("Application deleted");
     }
     @GetMapping("/{id}/resume")
     public ResponseEntity<Resource> downloadResume(@PathVariable Long id, Authentication auth) throws Exception {

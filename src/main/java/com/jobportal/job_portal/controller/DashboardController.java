@@ -78,8 +78,8 @@ public class DashboardController {
                 .sum();
 
         EmployerDashboardDTO dto = new EmployerDashboardDTO();
-        dto.myJobs = jobs.size();
-        dto.totalApplications = totalApplications;
+        dto.totalJobsPosted = jobs.size();
+        dto.totalApplicationsReceived = totalApplications;
 
         return dto;
     }

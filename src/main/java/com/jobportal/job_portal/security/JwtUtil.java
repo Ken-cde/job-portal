@@ -25,7 +25,16 @@ public class JwtUtil {
                 .compact();
     }
 
-    // Extract email from token
+    // Generate password reset token (short-lived, 15 min)
+    public String generateResetToken(String email) {
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15)) // 15 min.
+                .signWith(key)
+                .compact();
+    }
+
     public String extractEmail(String token) {
         return getClaims(token).getSubject();
     }

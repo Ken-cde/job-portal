@@ -8,6 +8,7 @@ import com.jobportal.job_portal.model.Job;
 import com.jobportal.job_portal.model.User;
 import com.jobportal.job_portal.repository.JobRepository;
 import com.jobportal.job_portal.repository.UserRepository;
+import com.jobportal.job_portal.service.EmailService;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/jobs")
@@ -23,10 +25,12 @@ public class JobController {
 
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
-    public JobController(JobRepository jobRepository, UserRepository userRepository) {
+    public JobController(JobRepository jobRepository, UserRepository userRepository, EmailService emailService) {
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
     // CREATE JOB (logged user)
@@ -47,7 +51,16 @@ public class JobController {
 
         job.setUser(user);
 
-        return jobRepository.save(job);
+        Job savedJob = jobRepository.save(job);
+
+        emailService.sendJobPostedConfirmation(
+            user.getEmail(),
+            user.getUsername(),
+            savedJob.getTitle(),
+            savedJob.getCompany()
+        );
+
+        return savedJob;
     }
 
 
@@ -127,6 +140,9 @@ public class JobController {
         job.setCompany(updatedJob.getCompany());
         job.setLocation(updatedJob.getLocation());
         job.setSalary(updatedJob.getSalary());
+        job.setJobType(updatedJob.getJobType());
+        job.setRequirements(updatedJob.getRequirements());
+        job.setDeadline(updatedJob.getDeadline());
 
         jobRepository.save(job);
 
