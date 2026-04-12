@@ -29,6 +29,11 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+### Environment ###
+.env
+.env.local
+.env.production
+
 ### VS Code ###
 .vscode/
 
