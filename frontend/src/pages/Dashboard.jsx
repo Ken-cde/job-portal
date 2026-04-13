@@ -17,8 +17,8 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user) return;
     fetchDashboard();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.role]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.role, user?.id]);
 
   const fetchDashboard = async () => {
     if (!user?.role) return;
