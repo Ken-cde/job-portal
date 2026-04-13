@@ -45,7 +45,14 @@ const Dashboard = () => {
       setData(res.data);
     } catch (err) {
       console.error('Failed to fetch dashboard data', err);
-      setError(err.response?.data || err.message);
+      console.error('Error name:', err.name);
+      console.error('Error code:', err.code);
+      console.error('Error message:', err.message);
+      if (err.code === 'ECONNABORTED' || err.name === 'AbortError') {
+        setError('Request timed out. The server is not responding.');
+      } else {
+        setError(err.response?.data || err.message);
+      }
     } finally {
       setLoading(false);
     }
