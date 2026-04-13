@@ -18,7 +18,7 @@ const Dashboard = () => {
     if (!user) return;
     fetchDashboard();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.role, user?.id]);
+  }, [user]);
 
   const fetchDashboard = async () => {
     if (!user?.role) return;
