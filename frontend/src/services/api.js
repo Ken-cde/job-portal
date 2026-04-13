@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// VITE_API_URL must be set in Vercel environment variables for production
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8085';
+// Empty string = relative URLs. Vercel rewrites /auth/*, /users/*, /jobs/* etc. to ngrok backend.
+// Dev: set VITE_API_URL=http://localhost:8085 in .env for local development.
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 const api = axios.create({
   baseURL: API_URL,

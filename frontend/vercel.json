@@ -2,6 +2,13 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
+    { "source": "/auth/:path*", "destination": "https://causation-esteemed-impromptu.ngrok-free.dev/auth/:path*" },
+    { "source": "/users/:path*", "destination": "https://causation-esteemed-impromptu.ngrok-free.dev/users/:path*" },
+    { "source": "/jobs/:path*", "destination": "https://causation-esteemed-impromptu.ngrok-free.dev/jobs/:path*" },
+    { "source": "/applications/:path*", "destination": "https://causation-esteemed-impromptu.ngrok-free.dev/applications/:path*" },
+    { "source": "/dashboard/:path*", "destination": "https://causation-esteemed-impromptu.ngrok-free.dev/dashboard/:path*" },
+    { "source": "/admin/:path*", "destination": "https://causation-esteemed-impromptu.ngrok-free.dev/admin/:path*" },
+    { "source": "/health", "destination": "https://causation-esteemed-impromptu.ngrok-free.dev/health" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
