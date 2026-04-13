@@ -87,6 +87,10 @@ public class SecurityConfig {
                         // Auth
                         .requestMatchers("/auth/**").permitAll()
 
+                        // Public APIs
+                        .requestMatchers("/jobs/**").permitAll()
+                        .requestMatchers("/health").permitAll()
+
                         // Dashboards
                         .requestMatchers("/dashboard/admin").hasRole("ADMIN")
                         .requestMatchers("/dashboard/employer").hasRole("EMPLOYER")
