@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../services/api';
@@ -14,13 +14,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (!user) return;
-    fetchDashboard();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  const fetchDashboard = async () => {
+  const fetchDashboard = useCallback(async () => {
     if (!user?.role) return;
     setLoading(true);
     setError(null);
@@ -45,21 +39,25 @@ const Dashboard = () => {
       setData(res.data);
     } catch (err) {
       console.error('Failed to fetch dashboard data', err);
-      console.error('Error name:', err.name);
-      console.error('Error code:', err.code);
-      console.error('Error message:', err.message);
       if (err.code === 'ECONNABORTED' || err.name === 'AbortError') {
-        setError('Request timed out. The server is not responding.');
+        setError('Request timed out. Server not responding. Make sure ngrok is running.');
+      } else if (err.response?.status === 403) {
+        setError('Access denied. Try logging out and in again.');
       } else {
-        setError(err.response?.data || err.message);
+        setError(err.response?.data?.message || err.message || 'Unknown error');
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.role]);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchDashboard();
+  }, [user, fetchDashboard]);
 
   if (loading) return <div style={{textAlign: 'center', padding: '4rem'}}>Loading dashboard...</div>;
-  if (error) return <div style={{textAlign: 'center', color: 'var(--danger)', padding: '4rem'}}>Error: {JSON.stringify(error)}</div>;
+  if (error) return <div style={{textAlign: 'center', color: 'var(--danger)', padding: '4rem'}}>Error: {error}</div>;
   if (!user) return <div style={{textAlign: 'center', padding: '4rem'}}>Please login.</div>;
   if (!data) return <div style={{textAlign: 'center', color: 'var(--danger)'}}>No data received.</div>;
 

@@ -18,7 +18,8 @@ const Home = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [search]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (user?.role === 'CANDIDATE') {
@@ -96,15 +97,22 @@ const Home = () => {
           Connect with top employers and discover opportunities that match your skills. Your next big career move starts here.
         </p>
 
-        <div style={{maxWidth: '500px', margin: '0 auto', position: 'relative'}}>
+        <div style={{maxWidth: '500px', margin: '0 auto', position: 'relative', display: 'flex', gap: '0.5rem'}}>
           <input
             type="text"
             placeholder="Search by job title or keyword..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{paddingLeft: '3rem', borderRadius: '2rem', height: '50px', fontSize: '1rem', background: 'var(--bg-secondary)'}}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); fetchJobs(); } }}
+            style={{flex: 1, paddingLeft: '3rem', borderRadius: '2rem', height: '50px', fontSize: '1rem', background: 'var(--bg-secondary)'}}
           />
-          <Search size={20} color="var(--text-muted)" style={{position: 'absolute', left: '1rem', top: '15px'}} />
+          <button
+            onClick={fetchJobs}
+            className="btn btn-primary"
+            style={{borderRadius: '2rem', padding: '0 1.5rem', height: '50px'}}
+          >
+            Search
+          </button>
         </div>
       </div>
 

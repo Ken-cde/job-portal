@@ -50,7 +50,8 @@ public class SecurityConfig {
             "http://localhost:5174",
             "https://job-portal-8zu5.vercel.app",
             "https://ken-cdes-projects.vercel.app",
-            "https://frontend-ihb890ynw-ken-cdes-projects.vercel.app"
+            "https://frontend-ihb890ynw-ken-cdes-projects.vercel.app",
+            "https://frontend-ten-theta-87.vercel.app"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
