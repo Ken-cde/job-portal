@@ -8,6 +8,7 @@ import com.jobportal.job_portal.service.EmailService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import org.springframework.data.domain.PageImpl;
 
 @RestController
 @RequestMapping("/applications")
@@ -132,7 +134,8 @@ public class ApplicationController {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        return applicationRepository.findAll(pageable)
+        List<ApplicationResponseDTO> filtered = applicationRepository.findAll(pageable)
+                .stream()
                 .filter(app -> myJobIds.contains(app.getJob().getId()))
                 .map(app -> new ApplicationResponseDTO(
                         app.getId(),
@@ -142,7 +145,10 @@ public class ApplicationController {
                         app.getJob().getId(),
                         app.getStatus().name(),
                         app.getAppliedAt()
-                ));
+                ))
+                .toList();
+
+        return new PageImpl<>(filtered, pageable, filtered.size());
     }
 
     @GetMapping("/job/{jobId}")
