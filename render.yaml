@@ -1,0 +1,23 @@
+database:
+  name: job_portal
+  engine: postgres
+  version: "16"
+
+services:
+  - type: web
+    name: job-portal
+    env: java
+    plan: starter
+    buildCommand: ./mvnw package -DskipTests
+    startCommand: java -jar target/job-portal-0.0.1-SNAPSHOT.jar
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: job_portal
+          property: internalConnectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DDL_AUTO
+        value: update
+      - key: SHOW_SQL
+        value: "false"
