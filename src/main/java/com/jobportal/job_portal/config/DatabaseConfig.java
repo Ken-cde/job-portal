@@ -1,9 +1,7 @@
 package com.jobportal.job_portal.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.jdbc.DatabaseDriver;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.orm.jpa.JpaProperties;
 
 import jakarta.annotation.PostConstruct;
 
