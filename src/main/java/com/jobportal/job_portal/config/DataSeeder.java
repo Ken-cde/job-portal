@@ -18,12 +18,14 @@ public class DataSeeder implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final JobRepository jobRepository;
+    private final com.jobportal.job_portal.repository.ApplicationRepository applicationRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public DataSeeder(RoleRepository roleRepository, UserRepository userRepository, JobRepository jobRepository, PasswordEncoder passwordEncoder) {
+    public DataSeeder(RoleRepository roleRepository, UserRepository userRepository, JobRepository jobRepository, com.jobportal.job_portal.repository.ApplicationRepository applicationRepository, PasswordEncoder passwordEncoder) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.jobRepository = jobRepository;
+        this.applicationRepository = applicationRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -32,6 +34,7 @@ public class DataSeeder implements CommandLineRunner {
 
         // 1. Wipe all data for a fresh start
         System.out.println("Cleaning database for fresh start...");
+        applicationRepository.deleteAll();
         jobRepository.deleteAll();
         userRepository.deleteAll();
         roleRepository.deleteAll();
