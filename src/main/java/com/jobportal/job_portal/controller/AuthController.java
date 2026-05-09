@@ -39,8 +39,28 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        try {
+            Role role = roleRepository.findByName("CANDIDATE")
+                    .orElseThrow(() -> new RuntimeException("Role CANDIDATE not found"));
 
+            User user = new User();
+            user.setUsername(request.getUsername());
+            user.setEmail(request.getEmail());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setRole(role);
+
+            userRepository.save(user);
+
+            emailService.sendWelcomeEmail(user.getEmail(), user.getUsername());
+
+            return ResponseEntity.ok("User Registered Successfully");
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            return ResponseEntity.status(400).body("Email already exists. Please login instead.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("An error occurred during registration: " + e.getMessage());
+        }
+    }
         Role role = roleRepository.findByName("CANDIDATE")
                 .orElseThrow(() -> new RuntimeException("Role CANDIDATE not found"));
 
