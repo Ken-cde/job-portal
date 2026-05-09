@@ -52,7 +52,11 @@ public class AuthController {
 
             userRepository.save(user);
 
-            emailService.sendWelcomeEmail(user.getEmail(), user.getUsername());
+            try {
+                emailService.sendWelcomeEmail(user.getEmail(), user.getUsername());
+            } catch (Exception e) {
+                System.err.println("Welcome email failed but user was registered: " + e.getMessage());
+            }
 
             return ResponseEntity.ok("User Registered Successfully");
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
