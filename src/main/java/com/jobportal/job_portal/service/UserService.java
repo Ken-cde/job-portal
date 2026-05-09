@@ -20,4 +20,13 @@ public class UserService {
         return userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
+
+    public boolean deleteUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(user -> {
+                    userRepository.delete(user);
+                    return true;
+                })
+                .orElse(false);
+    }
 }

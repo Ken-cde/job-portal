@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Map;
 
@@ -62,5 +63,14 @@ public class UserController {
 
         userRepository.save(user);
         return ResponseEntity.ok(Map.of("message", "Profile updated"));
+    }
+
+    @DeleteMapping("/{email}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteUser(@PathVariable String email) {
+        if (userService.deleteUserByEmail(email)) {
+            return ResponseEntity.ok(Map.of("message", "User deleted successfully"));
+        }
+        return ResponseEntity.notFound().build();
     }
 }
