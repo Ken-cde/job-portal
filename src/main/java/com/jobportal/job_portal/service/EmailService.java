@@ -12,11 +12,15 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    @Value("${spring.mail.username}")
+    @Value("${spring.mail.username:smtp4523@gmail.com}")
     private String fromEmail;
 
     public void sendEmail(String to, String subject, String body) {
         try {
+            if (fromEmail == null || fromEmail.isBlank()) {
+                System.err.println("Email failed: fromEmail is null or blank");
+                return;
+            }
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(to);
             message.setSubject(subject);
@@ -25,7 +29,8 @@ public class EmailService {
             mailSender.send(message);
             System.out.println("Email sent successfully to: " + to);
         } catch (Exception e) {
-            System.err.println("Failed to send email to " + to + ": " + e.getMessage());
+            System.err.println("CRITICAL EMAIL FAILURE to " + to + ": " + e.getClass().getName() + " - " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
