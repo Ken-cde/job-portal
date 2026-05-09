@@ -30,79 +30,31 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
+        // 1. Wipe all data for a fresh start
+        System.out.println("Cleaning database for fresh start...");
+        jobRepository.deleteAll();
+        userRepository.deleteAll();
+        roleRepository.deleteAll();
+        System.out.println("✅ Database wiped clean");
+
+        // 2. Create roles
         List<String> roles = List.of("CANDIDATE", "EMPLOYER", "ADMIN");
 
         for (String roleName : roles) {
-            if (roleRepository.findByName(roleName).isEmpty()) {
-                Role role = new Role();
-                role.setName(roleName);
-                roleRepository.save(role);
-                System.out.println("✅ Created role: " + roleName);
-            }
+            Role role = new Role();
+            role.setName(roleName);
+            roleRepository.save(role);
+            System.out.println("✅ Created role: " + roleName);
         }
 
-        // Create admin user if none exists
+        // 3. Create the requested Admin user
         Role adminRole = roleRepository.findByName("ADMIN").orElseThrow();
-        if (userRepository.findByEmail("admin@jobportal.com").isEmpty()) {
-            User admin = new User();
-            admin.setUsername("admin");
-            admin.setEmail("admin@jobportal.com");
-            admin.setPassword(passwordEncoder.encode("admin123"));
-            admin.setRole(adminRole);
-            userRepository.save(admin);
-            System.out.println("✅ Created admin user: admin@jobportal.com / admin123");
-        }
-
-        // Create a test employer and some dummy jobs if none exist
-        if (jobRepository.count() == 0) {
-            Role employerRole = roleRepository.findByName("EMPLOYER").orElseThrow();
-            
-            User employer = userRepository.findByEmail("tech_corp@test.com").orElseGet(() -> {
-                User newUser = new User();
-                newUser.setUsername("TechCorpInc");
-                newUser.setEmail("tech_corp@test.com");
-                newUser.setPassword(passwordEncoder.encode("password123"));
-                newUser.setRole(employerRole);
-                return userRepository.save(newUser);
-            });
-
-            // Job 1
-            Job job1 = new Job();
-            job1.setTitle("Senior React Developer");
-            job1.setDescription("We are looking for an experienced React developer to build modern, interactive frontends with glassmorphism design. Join our team to create stunning user interfaces for enterprise clients.");
-            job1.setCompany("Tech Corp Inc.");
-            job1.setLocation("Remote (US)");
-            job1.setJobType("REMOTE");
-            job1.setRequirements("5+ years React experience\nStrong JavaScript/TypeScript skills\nExperience with Vite, Redux, or Context API\nCSS-in-JS and responsive design\nPortfolio required");
-            job1.setSalary(120000.0);
-            job1.setUser(employer);
-            jobRepository.save(job1);
-
-            // Job 2
-            Job job2 = new Job();
-            job2.setTitle("Spring Boot Backend Engineer");
-            job2.setDescription("Join our core backend team to build robust APIs, secure endpoints, and manage complex databases using pure Java 21.");
-            job2.setCompany("Finance Solutions");
-            job2.setLocation("New York, NY");
-            job2.setJobType("HYBRID");
-            job2.setRequirements("3+ years Java experience\nSpring Boot & Spring Security\nMySQL/PostgreSQL database skills\nREST API design knowledge\nExperience with JWT authentication");
-            job2.setSalary(145000.0);
-            job2.setUser(employer);
-            jobRepository.save(job2);
-
-            // Job 3
-            Job job3 = new Job();
-            job3.setTitle("UI/UX Designer");
-            job3.setDescription("Create beautiful, engaging interfaces for Next-Gen applications. Must have a strong portfolio demonstrating glassmorphism and modern trends.");
-            job3.setCompany("Creative Studio");
-            job3.setLocation("San Francisco, CA");
-            job3.setJobType("ONSITE");
-            job3.setRequirements("3+ years UI/UX experience\nFigma/Adobe XD proficiency\nStrong portfolio with glassmorphism work\nUser research & wireframing skills\nAbility to work with React developers");
-            job3.setSalary(95000.0);
-            job3.setUser(employer);
-            jobRepository.save(job3);
-
-            System.out.println("✅ Seeded 3 dummy jobs under employer: " + employer.getEmail());
-        }
+        User admin = new User();
+        admin.setUsername("Admin");
+        admin.setEmail("smtp4523@gmail.com");
+        admin.setPassword(passwordEncoder.encode("smtp12345"));
+        admin.setRole(adminRole);
+        userRepository.save(admin);
+        System.out.println("✅ Created admin user: smtp4523@gmail.com / smtp12345");
     }
 }
