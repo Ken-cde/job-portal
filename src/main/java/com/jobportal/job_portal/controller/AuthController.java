@@ -61,21 +61,6 @@ public class AuthController {
             return ResponseEntity.status(500).body("An error occurred during registration: " + e.getMessage());
         }
     }
-        Role role = roleRepository.findByName("CANDIDATE")
-                .orElseThrow(() -> new RuntimeException("Role CANDIDATE not found"));
-
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(role);
-
-        userRepository.save(user);
-
-        emailService.sendWelcomeEmail(user.getEmail(), user.getUsername());
-
-        return "User Registered Successfully";
-    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
