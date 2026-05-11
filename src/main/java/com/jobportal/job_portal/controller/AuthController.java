@@ -41,8 +41,13 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
-            Role role = roleRepository.findByName("CANDIDATE")
-                    .orElseThrow(() -> new RuntimeException("Role CANDIDATE not found"));
+            String roleName = request.getRole();
+            if (roleName == null || roleName.isBlank()) {
+                roleName = "CANDIDATE"; // Default to candidate if not specified
+            }
+
+            Role role = roleRepository.findByName(roleName.toUpperCase())
+                    .orElseThrow(() -> new RuntimeException("Role " + roleName + " not found"));
 
             User user = new User();
             user.setUsername(request.getUsername());

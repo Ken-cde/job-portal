@@ -59,5 +59,39 @@ public class DataSeeder implements CommandLineRunner {
         admin.setRole(adminRole);
         userRepository.save(admin);
         System.out.println("✅ Created admin user: smtp4523@gmail.com / smtp12345");
+
+        // 4. Create a single Employer user
+        Role employerRole = roleRepository.findByName("EMPLOYER").orElseThrow();
+        User employer = new User();
+        employer.setUsername("TechCorp_HR");
+        employer.setEmail("hr@techcorp.com");
+        employer.setPassword(passwordEncoder.encode("employer123"));
+        employer.setRole(employerRole);
+        userRepository.save(employer);
+        System.out.println("✅ Created employer user: hr@techcorp.com / employer123");
+
+        // 5. Create 20 different tech jobs for this employer
+        String[] techJobs = {
+            "Java Developer", "React Developer", "Full Stack Engineer", "DevOps Engineer",
+            "Python Developer", "Data Scientist", "Cloud Architect", "Android Developer",
+            "iOS Developer", "QA Automation Engineer", "Backend Engineer (Go)", "Security Specialist",
+            "Machine Learning Engineer", "Frontend Architect", "Database Administrator", "SRE Engineer",
+            "UI/UX Designer", "Embedded Systems Engineer", "Blockchain Developer", "Network Engineer"
+        };
+
+        for (String title : techJobs) {
+            Job job = new Job();
+            job.setTitle(title);
+            job.setDescription("Exciting opportunity for a " + title + " to join our growing team. We are looking for passionate individuals with strong technical skills.");
+            job.setCompany("TechCorp Inc.");
+            job.setLocation("Remote");
+            job.setSalary(120000.0 + (Math.random() * 50000));
+            job.setJobType("Full-time");
+            job.setRequirements("3+ years experience in " + title + ", strong problem solving skills, and a degree in CS or equivalent.");
+            job.setDeadline(java.time.LocalDate.now().plusMonths(2));
+            job.setUser(employer);
+            jobRepository.save(job);
+        }
+        System.out.println("✅ Created 20 technical jobs for TechCorp HR");
     }
 }
