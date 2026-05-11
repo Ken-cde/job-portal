@@ -63,7 +63,13 @@ public class AuthController {
                 System.err.println("Welcome email failed but user was registered: " + e.getMessage());
             }
 
-            return ResponseEntity.ok("User Registered Successfully");
+            String token = jwtUtil.generateToken(user.getEmail(), user.getUsername());
+
+            return ResponseEntity.ok(Map.of(
+                "message", "Account successfully created",
+                "token", token,
+                "role", role.getName()
+            ));
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
             return ResponseEntity.status(400).body("Email already exists. Please login instead.");
         } catch (Exception e) {
