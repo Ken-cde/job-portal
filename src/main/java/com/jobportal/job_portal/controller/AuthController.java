@@ -41,13 +41,13 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
-            String roleName = request.getRole();
-            if (roleName == null || roleName.isBlank()) {
-                roleName = "CANDIDATE"; // Default to candidate if not specified
-            }
+            String roleRequest = request.getRole();
+            final String finalRoleName = (roleRequest == null || roleRequest.isBlank())
+                                         ? "CANDIDATE"
+                                         : roleRequest.toUpperCase();
 
-            Role role = roleRepository.findByName(roleName.toUpperCase())
-                    .orElseThrow(() -> new RuntimeException("Role " + roleName + " not found"));
+            Role role = roleRepository.findByName(finalRoleName)
+                    .orElseThrow(() -> new RuntimeException("Role " + finalRoleName + " not found"));
 
             User user = new User();
             user.setUsername(request.getUsername());
