@@ -1,31 +1,41 @@
 package com.jobportal.job_portal.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.*;
+import java.util.*;
 
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
-
-    @Value("${spring.mail.username:smtp4523@gmail.com}")
+    @Value("${spring.mail.username:your-email@example.com}")
     private String fromEmail;
+
+    @Value("${mail.api.key:your-brevo-api-key}")
+    private String apiKey;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final String BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
     public void sendEmail(String to, String subject, String body) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(to);
-            message.setSubject(subject);
-            message.setText(body);
-            mailSender.send(message);
-            System.out.println("✅ Email sent successfully to: " + to);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("api-key", apiKey);
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("sender", Map.of("name", "Job Portal", "email", fromEmail));
+            requestBody.put("to", List.of(Map.of("email", to)));
+            requestBody.put("subject", subject);
+            requestBody.put("htmlContent", body.replace("\n", "<br>"));
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+            restTemplate.postForEntity(BREVO_API_URL, entity, String.class);
+
+            System.out.println("✅ API Email sent successfully to: " + to);
         } catch (Exception e) {
-            System.err.println("❌ Failed to send email to " + to + ": " + e.getMessage());
+            System.err.println("❌ Brevo API failed to send email to " + to + ": " + e.getMessage());
             e.printStackTrace();
         }
     }
