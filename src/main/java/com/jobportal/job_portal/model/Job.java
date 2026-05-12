@@ -20,6 +20,7 @@ public class Job {
     private String company;
     private String location;
     private Double salary;
+    private String currency;
     private String jobType;
     private String requirements;
     private LocalDate deadline;

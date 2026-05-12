@@ -6,6 +6,7 @@ import ApplyModal from '../components/ApplyModal';
 import JobDetailModal from '../components/JobDetailModal';
 import PostJobModal from '../components/PostJobModal';
 import { Briefcase, Users, FileText, CheckCircle, Clock, XCircle, Eye, Wifi, Home, Building, Pencil, Trash } from 'lucide-react';
+import { getCurrencySymbol } from '../utils/currency';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -424,7 +425,7 @@ const CandidateView = ({ data }) => {
                         {job.jobType && (
                           <span style={{background: `${jobTypeColor}20`, color: jobTypeColor, padding: '0.1rem 0.4rem', borderRadius: '0.5rem', fontSize: '0.65rem', fontWeight: '600'}}>{job.jobType}</span>
                         )}
-                        <span style={{color: '#10b981'}}>${job.salary?.toLocaleString()}</span>
+                        <span style={{color: '#10b981'}}>{getCurrencySymbol(job.currency)}{job.salary?.toLocaleString()}</span>
                       </div>
                     </div>
                     <div style={{display: 'flex', gap: '0.25rem', flexShrink: 0}}>

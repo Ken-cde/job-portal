@@ -98,6 +98,7 @@ public class DataSeeder implements CommandLineRunner {
                     job.setCompany("TechCorp Inc.");
                     job.setLocation("Remote");
                     job.setSalary(120000.0 + (Math.random() * 50000));
+                    job.setCurrency("USD");
                     job.setJobType("Full-time");
                     job.setRequirements("3+ years experience in " + title + ", strong problem solving skills, and a degree in CS or equivalent.");
                     job.setDeadline(java.time.LocalDate.now().plusMonths(2));

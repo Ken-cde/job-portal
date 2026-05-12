@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Briefcase, CheckCircle, Edit } from 'lucide-react';
 import api from '../services/api';
+import { COMMON_CURRENCIES } from '../utils/currency';
 
 const EMPTY_FORM = {
   title: '',
@@ -8,6 +9,7 @@ const EMPTY_FORM = {
   company: '',
   location: '',
   salary: '',
+  currency: 'USD',
   jobType: 'ONSITE',
   requirements: '',
   deadline: '',
@@ -20,6 +22,7 @@ const PostJobModal = ({ isOpen, onClose, onSuccess, job, isEdit = false }) => {
     company: job.company || '',
     location: job.location || '',
     salary: job.salary || '',
+    currency: job.currency || 'USD',
     jobType: job.jobType || 'ONSITE',
     requirements: job.requirements || '',
     deadline: job.deadline || '',
@@ -155,13 +158,26 @@ const PostJobModal = ({ isOpen, onClose, onSuccess, job, isEdit = false }) => {
                     style={{ width: '100%', padding: '0.6rem 1rem', borderRadius: 'var(--radius-sm)', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'white', fontSize: '0.9rem' }}
                   />
                 </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Salary ($/year)</label>
-                  <input
-                    type="number" name="salary" value={formData.salary} onChange={handleChange}
-                    placeholder="e.g. 120000"
-                    style={{ width: '100%', padding: '0.6rem 1rem', borderRadius: 'var(--radius-sm)', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'white', fontSize: '0.9rem' }}
-                  />
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Salary</label>
+                    <input
+                      type="number" name="salary" value={formData.salary} onChange={handleChange}
+                      placeholder="e.g. 120000"
+                      style={{ width: '100%', padding: '0.6rem 1rem', borderRadius: 'var(--radius-sm)', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'white', fontSize: '0.9rem' }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Currency</label>
+                    <select
+                      name="currency" value={formData.currency} onChange={handleChange}
+                      style={{ width: '100%', padding: '0.6rem 1rem', borderRadius: 'var(--radius-sm)', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'white', fontSize: '0.9rem' }}
+                    >
+                      {COMMON_CURRENCIES.map(cur => (
+                        <option key={cur} value={cur}>{cur}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 

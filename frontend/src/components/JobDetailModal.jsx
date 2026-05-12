@@ -1,4 +1,5 @@
 import { X, MapPin, Building2, Briefcase, DollarSign, Wifi, Home, Building, CheckCircle } from 'lucide-react';
+import { getCurrencySymbol } from '../utils/currency';
 
 const getJobTypeIcon = (jobType) => {
   switch (jobType) {
@@ -89,7 +90,7 @@ const JobDetailModal = ({ job, isOpen, onClose, onApply, hasApplied }) => {
               background: 'rgba(16, 185, 129, 0.15)', color: '#10b981',
               padding: '0.25rem 0.75rem', borderRadius: '1rem', fontSize: '0.8rem', fontWeight: '600'
             }}>
-              <DollarSign size={14} /> ${job.salary?.toLocaleString()}/year
+              <DollarSign size={14} /> {getCurrencySymbol(job.currency)}{job.salary?.toLocaleString()}/year
             </span>
             {job.jobType && (
               <span style={{

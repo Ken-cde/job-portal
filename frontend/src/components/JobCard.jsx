@@ -1,4 +1,5 @@
 import { Briefcase, MapPin, Building2, Clock, Wifi, Home, Building, Eye } from 'lucide-react';
+import { getCurrencySymbol } from '../utils/currency';
 
 const getJobTypeIcon = (jobType) => {
   switch (jobType) {
@@ -40,7 +41,7 @@ const JobCard = ({ job, onApply, onViewDetails, userRole, hasApplied }) => {
           <div style={{display: 'flex', gap: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem', flexWrap: 'wrap'}}>
             <span style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}><Building2 size={16} /> {job.company}</span>
             <span style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}><MapPin size={16} /> {job.location}</span>
-            <span style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}><Briefcase size={16} /> ${job.salary.toLocaleString()}</span>
+            <span style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}><Briefcase size={16} /> {getCurrencySymbol(job.currency)}{job.salary?.toLocaleString()}</span>
           </div>
         </div>
         <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end'}}>
