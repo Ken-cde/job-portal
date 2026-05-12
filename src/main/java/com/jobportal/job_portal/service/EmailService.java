@@ -17,16 +17,16 @@ public class EmailService {
 
     public void sendEmail(String to, String subject, String body) {
         try {
-            // MOCK MODE: Render blocks SMTP ports, so we simulate email sending to prevent registration crashes.
-            System.out.println("--------------------------------------------------");
-            System.out.println("MOCK EMAIL SENT");
-            System.out.println("To: " + to);
-            System.out.println("Subject: " + subject);
-            System.out.println("Body: " + body);
-            System.out.println("--------------------------------------------------");
-            System.out.println("Email simulation successful for: " + to);
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(body);
+            mailSender.send(message);
+            System.out.println("✅ Email sent successfully to: " + to);
         } catch (Exception e) {
-            System.err.println("Failed to simulate email to " + to + ": " + e.getMessage());
+            System.err.println("❌ Failed to send email to " + to + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
