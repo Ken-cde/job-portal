@@ -39,11 +39,18 @@ public class DataSeeder implements CommandLineRunner {
             try {
                 // 1. Wipe all data for a fresh start
                 System.out.println("Cleaning database for fresh start... (Attempt " + (retryCount + 1) + ")");
+
+                // Specifically remove test accounts to ensure clean signup testing
+                List<String> emailsToRemove = List.of("monstergamezone803@gmail.com", "ketanbisen37@gmail.com");
+                for (String email : emailsToRemove) {
+                    userRepository.findByEmail(email).ifPresent(userRepository::delete);
+                }
+
                 applicationRepository.deleteAll();
                 jobRepository.deleteAll();
                 userRepository.deleteAll();
                 roleRepository.deleteAll();
-                System.out.println("✅ Database wiped clean");
+                System.out.println("✅ Database wiped clean and test users removed");
 
                 // 2. Create roles
                 List<String> roles = List.of("CANDIDATE", "EMPLOYER", "ADMIN");
