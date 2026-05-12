@@ -9,10 +9,10 @@ import java.util.*;
 @Service
 public class EmailService {
 
-    @Value("${spring.mail.username:your-email@example.com}")
+    @Value("${MAIL_USERNAME:${spring.mail.username:your-email@example.com}}")
     private String fromEmail;
 
-    @Value("${mail.api.key:your-brevo-api-key}")
+    @Value("${MAIL_API_KEY:${mail.api.key:your-brevo-api-key}}")
     private String apiKey;
 
     private final RestTemplate restTemplate = new RestTemplate();
