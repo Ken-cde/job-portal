@@ -20,6 +20,13 @@ public class EmailService {
 
     public void sendEmail(String to, String subject, String body) {
         try {
+            // DEBUG: Check if API key is actually loaded
+            if (apiKey == null || apiKey.contains("your-brevo-api-key")) {
+                System.err.println("❌ CRITICAL: API Key is missing or still using default value!");
+            } else {
+                System.out.println("Using API Key starting with: " + apiKey.substring(0, Math.min(apiKey.length(), 10)) + "...");
+            }
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("api-key", apiKey);
