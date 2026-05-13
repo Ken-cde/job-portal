@@ -32,20 +32,20 @@ const JobCard = ({ job, onApply, onViewDetails, userRole, hasApplied }) => {
               <span className="flex items-center gap-1 text-p3cyan/80 font-medium">
                 <Briefcase size={12} /> {getCurrencySymbol(job.currency)}{job.salary?.toLocaleString()}
               </span>
-            </div_div>
-          </div_div>
+            </div>
+          </div>
 
           <div className="flex flex-col gap-2 items-end">
             <div className="px-3 py-1 rounded-full text-[10px] cinematic-text bg-p3cyan/10 text-p3cyan border border-p3cyan/20">
               Active
-            </div_div>
+            </div>
             {job.jobType && (
               <div className="px-2 py-0.5 rounded-full text-[10px] cinematic-text bg-white/5 text-white/60 border border-white/10 flex items-center gap-1">
                 {getJobTypeIcon(job.jobType)} {job.jobType}
-              </div_div>
+              </div>
             )}
-          </div_div>
-        </div_div>
+          </div>
+        </div>
 
         <p className="text-white/50 font-light text-sm line-clamp-3 leading-relaxed">
           {job.description}
@@ -64,7 +64,7 @@ const JobCard = ({ job, onApply, onViewDetails, userRole, hasApplied }) => {
                 <Eye size={12} /> Details
               </button>
             )}
-          </div_div>
+          </div>
 
           {userRole === 'CANDIDATE' && (
             <RippleButton
@@ -75,7 +75,7 @@ const JobCard = ({ job, onApply, onViewDetails, userRole, hasApplied }) => {
               {hasApplied ? 'Applied' : 'Apply'}
             </RippleButton>
           )}
-        </div_div>
+        </div>
       </GlassPanel>
     </WateryCard>
   );
