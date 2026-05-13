@@ -195,7 +195,7 @@ const CandidateView = ({ data }) => {
   return (
     <>
       {selectedJob && <ApplyModal job={selectedJob} isOpen={showApplyModal} onClose={() => { setShowApplyModal(false); setSelectedJob(null); }} onSuccess={handleApplySuccess} />}
-      <JobDetailModal job={selected la-job} isOpen={showDetailModal} onClose={() => setShowDetailModal(false)} onApply={handleApplyFromModal} hasApplied={selectedJob ? appliedJobs.has(selectedJob.id) : false} />
+      <JobDetailModal job={selectedJob} isOpen={showDetailModal} onClose={() => setShowDetailModal(false)} onApply={handleApplyFromModal} hasApplied={selectedJob ? appliedJobs.has(selectedJob.id) : false} />
 
       {popupStatus && (
         <div className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6" onClick={() => setPopupStatus(null)}>
