@@ -203,7 +203,7 @@ const CandidateView = ({ data }) => {
             <div className="p-6 border-b border-white/10 flex justify-between items-center">
               <CinematicText variant="h3">{popupTitle}</CinematicText>
               <button onClick={() => setPopupStatus(null)} className="text-white/40 hover:text-white transition-colors text-2xl">×</button>
-            </div_div>
+            </div>
             <div className="p-4 overflow-y-auto flex-1 gap-2 flex flex-col">
               {loadingApps ? (
                 <div className="text-center py-12 cinematic-text text-white/30">Loading...</div>
@@ -223,7 +223,7 @@ const CandidateView = ({ data }) => {
                   );
                 })
               )}
-            </div_div>
+            </div>
           </GlassPanel>
         </div>
       )}
@@ -804,7 +804,7 @@ const AdminView = ({ data }) => {
                            <span className="px-2 py-0.5 rounded-full text-[10px] cinematic-text" style={{background: s.bg, color: s.color}}>{app.status}</span>
                            <div className="flex gap-1">
                              {app.status !== 'INTERVIEWING' && <RippleButton onClick={() => updateAdminAppStatus(app.id, 'interview')} className="py-1 px-2 text-[10px]">Interview</RippleButton>}
-                             {app.status !== 'REVIEWED' && <RippleButton onClick={() => updateAdminAppStatus(app.id, 'review')} className="py-1 px-2 text-[10px]">Review</SippleButton>}
+                             {app.status !== 'REVIEWED' && <RippleButton onClick={() => updateAdminAppStatus(app.id, 'review')} className="py-1 px-2 text-[10px]">Review</RippleButton>}
                              {app.status !== 'ACCEPTED' && <RippleButton onClick={() => updateAdminAppStatus(app.id, 'accept')} className="py-1 px-2 text-[10px] bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Accept</RippleButton>}
                              {app.status !== 'REJECTED' && <RippleButton onClick={() => updateAdminAppStatus(app.id, 'reject')} className="py-1 px-2 text-[10px] bg-red-500/20 text-red-400 border-red-500/30">Reject</RippleButton>}
                              <button className="p-1.5 rounded-full bg-white/5 text-white/60 hover:text-white transition-colors" onClick={() => downloadAdminResume(app.id)}><FileText size={12} /></button>
