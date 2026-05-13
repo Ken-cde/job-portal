@@ -1,120 +1,93 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  /* Colors - Deep Dark Theme */
-  --bg-color: #0d0f1a;
-  --bg-secondary: #161a2b;
-  --bg-tertiary: #1f253d;
-  
-  --primary: #7c3aed; /* Vibrant Violet */
-  --primary-hover: #6d28d9;
-  --secondary: #3b82f6; /* Bright Blue */
-  
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  
-  --success: #10b981;
-  --danger: #ef4444;
-  --warning: #f59e0b;
-  --info: #3b82f6;
-
-  /* Glassmorphism */
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  
-  /* Radii & Transitions */
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  --p3-midnight: #06111f;
+  --p3-navy: #081827;
+  --p3-cyan: #78e8ff;
+  --p3-aqua: #b2fefe;
 }
 
 body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--p3-midnight);
+  color: white;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-main);
-  line-height: 1.6;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(124, 58, 237, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
+  -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
-  line-height: 1.2;
-  color: #ffffff;
-}
-
-a {
-  color: var(--primary);
-  text-decoration: none;
-  transition: var(--transition);
-}
-
-a:hover {
-  color: var(--primary-hover);
-}
-
-/* Base Glass Card Utility */
+/* Custom Glassmorphism - Persona 3 Reload Style */
 .glass-panel {
-  background: rgba(22, 26, 43, 0.9);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--glass-shadow);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.glass-panel-bright {
+  background: rgba(120, 232, 255, 0.05);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(120, 232, 255, 0.2);
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.5s ease forwards;
+/* Cinematic Typography */
+.cinematic-text {
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 300;
 }
 
-/* Forms */
-input, select, textarea {
-  width: 100%;
-  padding: 12px 16px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-sm);
-  color: var(--text-main);
-  font-family: 'Inter', sans-serif;
-  transition: var(--transition);
-  outline: none;
+.oversized-text {
+  font-size: clamp(4rem, 12vw, 10rem);
+  line-height: 0.8;
+  opacity: 0.1;
+  pointer-events: none;
+  user-select: none;
+  font-weight: 100;
 }
 
-input:focus, select:focus, textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+/* Watery Hover Effect */
+.watery-hover {
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-input::placeholder, textarea::placeholder {
-  color: var(--text-muted);
+.watery-hover:hover {
+  box-shadow: 0 0 30px rgba(120, 232, 255, 0.3);
+  transform: scale(1.02) translateY(-2px);
+  border-color: rgba(120, 232, 255, 0.5);
+  color: var(--p3-cyan);
+}
+
+/* Ambient Glow Particles */
+.ambient-particle {
+  position: absolute;
+  background: radial-gradient(circle, var(--p3-cyan) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(2px);
+  pointer-events: none;
+  opacity: 0.3;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-color);
+  background: var(--p3-midnight);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-tertiary);
-  border-radius: 4px;
+  background: var(--p3-navy);
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  background: var(--p3-cyan);
 }

@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import { PageTransition } from '../components/MotionSystem';
+import GlassPanel from '../components/GlassPanel';
+import CinematicText from '../components/CinematicText';
+import { RippleButton } from '../components/MotionSystem';
 
 const Register = () => {
   const [formData, setFormData] = useState({username: '', email: '', password: ''});
@@ -18,13 +22,10 @@ const Register = () => {
     setError('');
     setSuccessMsg('');
     try {
-      // 1. Register the user
       await api.post('/auth/register', formData);
-      // 2. Show success message — email sent notification instead of auto-login
-      setSuccessMsg('Account created! Please check your email for a confirmation link, then sign in.');
+      setSuccessMsg('Identity Created. Please confirm your signal via email.');
     } catch (err) {
       if (err.response?.data && typeof err.response.data === 'object' && !err.response.data.message) {
-        // Handle validation errors key-value map
         const validationErrs = Object.values(err.response.data).join(', ');
         setError(validationErrs || 'Registration failed.');
       } else {
@@ -36,61 +37,79 @@ const Register = () => {
   };
 
   return (
-    <div className="animate-fade-in" style={{maxWidth: '400px', margin: '4rem auto'}}>
-      <div className="glass-panel" style={{padding: '2.5rem'}}>
-        <h2 style={{marginBottom: '0.5rem', textAlign: 'center'}}>Create an Account</h2>
-        <p style={{color: 'var(--text-muted)', textAlign: 'center', marginBottom: '2rem'}}>Join JobPortal today.</p>
-        
-        {error && <div style={{background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger)', padding: '0.75rem', borderRadius: '4px', marginBottom: '1.5rem', fontSize: '0.9rem'}}>{error}</div>}
+    <PageTransition>
+      <div className="flex min-h-[80vh] items-center justify-center p-6">
+        <GlassPanel
+          angle={-1}
+          className="w-full max-w-md p-12 glow"
+        >
+          <div className="text-center mb-12">
+            <CinematicText variant="h3" className="text-white text-2xl mb-2">New Identity</CinematicText>
+            <p className="text-white/40 cinematic-text text-[10px] uppercase tracking-widest">Initialize User Protocol</p>
+          </div>
 
-        {successMsg && <div style={{background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.75rem', borderRadius: '4px', marginBottom: '1.5rem', fontSize: '0.9rem'}}>{successMsg}</div>}
-        
-        <form onSubmit={handleSubmit} style={{display: 'flex', flexDirection: 'column', gap: '1.25rem'}}>
-          <div>
-            <label style={{display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem'}}>Username</label>
-            <input 
-              type="text" 
-              name="username"
-              required
-              value={formData.username} 
-              onChange={handleChange} 
-              placeholder="johndoe"
-            />
+          {error && (
+            <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs cinematic-text text-center">
+              {error}
+            </div>
+          )}
+
+          {successMsg && (
+            <div className="mb-6 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs cinematic-text text-center">
+              {successMsg}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <div className="space-y-2">
+              <label className="text-white/60 cinematic-text text-[10px] uppercase ml-1">Username</label>
+              <input
+                type="text"
+                name="username"
+                required
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="identity_name"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/20 focus:outline-none focus:border-p3cyan/50 transition-all"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-white/60 cinematic-text text-[10px] uppercase ml-1">Email Address</label>
+              <input
+                type="email"
+                name="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="identity@network.com"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/20 focus:outline-none focus:border-p3cyan/50 transition-all"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-white/60 cinematic-text text-[10px] uppercase ml-1">Password</label>
+              <input
+                type="password"
+                name="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/20 focus:outline-none focus:border-p3cyan/50 transition-all"
+              />
+            </div>
+
+            <RippleButton type="submit" className="w-full py-4" disabled={isLoading}>
+              {isLoading ? 'Initializing...' : 'Create Identity'}
+            </RippleButton>
+          </form>
+
+          <div className="text-center mt-12">
+            <span className="text-white/40 cinematic-text text-[10px]">Existing Record? </span>
+            <Link to="/login" className="text-p3cyan cinematic-text text-[10px] font-bold hover:underline">Sign In</Link>
           </div>
-          <div>
-            <label style={{display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem'}}>Email Address</label>
-            <input 
-              type="email" 
-              name="email"
-              required
-              value={formData.email} 
-              onChange={handleChange} 
-              placeholder="john@example.com"
-            />
-          </div>
-          <div>
-            <label style={{display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem'}}>Password</label>
-            <input 
-              type="password"
-              name="password" 
-              required
-              value={formData.password} 
-              onChange={handleChange} 
-              placeholder="••••••••"
-            />
-          </div>
-          
-          <button type="submit" className="btn btn-primary" style={{marginTop: '1rem', width: '100%'}} disabled={isLoading}>
-            {isLoading ? 'Creating account...' : 'Create Account'}
-          </button>
-        </form>
-        
-        <div style={{textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem'}}>
-          <span style={{color: 'var(--text-muted)'}}>Already have an account? </span>
-          <Link to="/login" style={{fontWeight: '500'}}>Sign In</Link>
-        </div>
+        </GlassPanel>
       </div>
-    </div>
+    </PageTransition>
   );
 };
 

@@ -5,8 +5,10 @@ import api from '../services/api';
 import ApplyModal from '../components/ApplyModal';
 import JobDetailModal from '../components/JobDetailModal';
 import PostJobModal from '../components/PostJobModal';
-import { Briefcase, Users, FileText, CheckCircle, Clock, XCircle, Eye, Wifi, Home, Building, Pencil, Trash } from 'lucide-react';
-import { getCurrencySymbol } from '../utils/currency';
+import { Briefcase, Users, FileText, CheckCircle, Clock, XCircle, Eye, Pencil, Trash } from 'lucide-react';
+import { PageTransition, WateryCard, RippleButton } from '../components/MotionSystem';
+import GlassPanel from '../components/GlassPanel';
+import CinematicText from '../components/CinematicText';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -27,8 +29,6 @@ const Dashboard = () => {
       };
 
       const endpoint = roleMap[user.role];
-      console.log('Fetching dashboard for role:', user.role, 'Endpoint:', endpoint);
-
       if (!endpoint) {
         setError('Unknown role: ' + user.role);
         setLoading(false);
@@ -36,17 +36,10 @@ const Dashboard = () => {
       }
 
       const res = await api.get(endpoint);
-      console.log('Dashboard data received:', res.data);
       setData(res.data);
     } catch (err) {
       console.error('Failed to fetch dashboard data', err);
-      if (err.code === 'ECONNABORTED' || err.name === 'AbortError') {
-        setError('Request timed out. Server not responding. Make sure ngrok is running.');
-      } else if (err.response?.status === 403) {
-        setError('Access denied. Try logging out and in again.');
-      } else {
-        setError(err.response?.data?.message || err.message || 'Unknown error');
-      }
+      setError(err.response?.data?.message || err.message || 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -57,52 +50,64 @@ const Dashboard = () => {
     fetchDashboard();
   }, [user, fetchDashboard]);
 
-  if (loading) return <div style={{textAlign: 'center', padding: '4rem'}}>Loading dashboard...</div>;
-  if (error) return <div style={{textAlign: 'center', color: 'var(--danger)', padding: '4rem'}}>Error: {error}</div>;
-  if (!user) return <div style={{textAlign: 'center', padding: '4rem'}}>Please login.</div>;
-  if (!data) return <div style={{textAlign: 'center', color: 'var(--danger)'}}>No data received.</div>;
-
-  // Render different dashboards based on role
-  return (
-    <div className="animate-fade-in">
-      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem'}}>
-        <div>
-          <h1 style={{fontSize: '2rem'}}>Welcome back, {user.username}!</h1>
-          <p style={{color: 'var(--text-muted)'}}>Here is your {user.role.toLowerCase()} overview.</p>
-        </div>
+  if (loading) return (
+    <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-4 border-p3cyan/20 border-t-p3cyan rounded-full animate-spin" />
+        <p className="cinematic-text text-xs text-p3cyan/60">Synchronizing neural link...</p>
       </div>
-
-      {user.role === 'CANDIDATE' && <CandidateView data={data} />}
-      {user.role === 'EMPLOYER' && <EmployerView data={data} />}
-      {user.role === 'ADMIN' && <AdminView data={data} />}
     </div>
+  );
+  if (error) return <div className="flex h-screen w-full items-center justify-center text-red-400 cinematic-text">Error: {error}</div>;
+  if (!user) return <div className="flex h-screen w-full items-center justify-center cinematic-text">Access Denied.</div>;
+  if (!data) return <div className="flex h-screen w-full items-center justify-center cinematic-text">No data received.</div>;
+
+  return (
+    <PageTransition>
+      <div className="relative min-h-screen w-full px-6 py-12">
+        {/* Cinematic Header */}
+        <header className="relative mb-20 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+          <div className="relative">
+            <CinematicText variant="label">Welcome Back</CinematicText>
+            <h1 className="text-5xl font-light text-white tracking-tight">
+              {user.username}<span className="text-p3cyan">.</span>
+            </h1>
+            <p className="text-white/40 cinematic-text text-xs mt-2 uppercase tracking-widest">
+              {user.role} Interface Activated
+            </p>
+          </div>
+
+          <div className="flex gap-4">
+            <div className="glass-panel px-4 py-2 rounded-full flex items-center gap-3 text-xs cinematic-text text-white/60 border-p3cyan/20">
+              <div className="w-2 h-2 bg-p3cyan rounded-full animate-pulse" />
+              System Online: {new Date().toLocaleDateString()}
+            </div>
+          </div>
+        </header>
+
+        {user.role === 'CANDIDATE' && <CandidateView data={data} />}
+        {user.role === 'EMPLOYER' && <EmployerView data={data} />}
+        {user.role === 'ADMIN' && <AdminView data={data} />}
+      </div>
+    </PageTransition>
   );
 };
 
-// --- Subviews ---
-
 const StatCard = ({ title, value, icon, color, onClick, active }) => (
-  <div
-    className="glass-panel"
-    onClick={onClick}
-    style={{
-      padding: '1.5rem',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '1rem',
-      cursor: onClick ? 'pointer' : 'default',
-      border: active ? `2px solid rgb(${color})` : '2px solid transparent',
-      transition: 'all 0.2s'
-    }}
-  >
-    <div style={{background: `rgba(${color}, 0.1)`, color: `rgb(${color})`, padding: '1rem', borderRadius: '50%'}}>
-      {icon}
-    </div>
-    <div>
-      <div style={{color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.25rem'}}>{title}</div>
-      <div style={{fontSize: '1.5rem', fontWeight: 'bold'}}>{value}</div>
-    </div>
-  </div>
+  <WateryCard angle={active ? 1 : 0}>
+    <GlassPanel
+      className={`p-6 flex items-center gap-6 transition-all duration-500 ${active ? 'glass-panel-bright border-p3cyan/50 shadow-[0_0_30px_rgba(120,232,255,0.15)]' : ''}`}
+      onClick={onClick}
+    >
+      <div className="p-4 rounded-2xl bg-white/5 text-p3cyan border border-white/10">
+        {icon}
+      </div>
+      <div>
+        <div className="text-white/40 cinematic-text text-[10px] uppercase tracking-tighter">{title}</div>
+        <div className="text-3xl font-light text-white">{value}</div>
+      </div>
+    </GlassPanel>
+  </WateryCard>
 );
 
 const CandidateView = ({ data }) => {
@@ -115,8 +120,8 @@ const CandidateView = ({ data }) => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'APPLIED' | 'ACCEPTED' | 'REJECTED'
-  const [popupStatus, setPopupStatus] = useState(null); // which stat card was clicked
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [popupStatus, setPopupStatus] = useState(null);
   const [appPage, setAppPage] = useState(0);
   const [appTotalPages, setAppTotalPages] = useState(0);
   const APP_PAGE_SIZE = 5;
@@ -127,11 +132,7 @@ const CandidateView = ({ data }) => {
       const endpoint = search ? `/jobs/search?keyword=${search}` : '/jobs';
       const res = await api.get(endpoint);
       setJobs(res.data.content || []);
-    } catch (err) {
-      console.error('Failed to fetch jobs', err);
-    } finally {
-      setLoadingJobs(false);
-    }
+    } catch (err) { console.error(err); } finally { setLoadingJobs(false); }
   };
 
   const fetchMyApplications = async (page = 0) => {
@@ -142,13 +143,8 @@ const CandidateView = ({ data }) => {
       setApplications(res.data.content || []);
       setAppTotalPages(res.data.totalPages || 0);
       setAppPage(page);
-      const appliedJobIds = res.data.content.map(app => app.jobId).filter(Boolean);
-      setAppliedJobs(new Set(appliedJobIds));
-    } catch (err) {
-      console.error('Failed to fetch applications', err);
-    } finally {
-      setLoadingApps(false);
-    }
+      setAppliedJobs(new Set(res.data.content.map(app => app.jobId).filter(Boolean)));
+    } catch (err) { console.error(err); } finally { setLoadingApps(false); }
   };
 
   useEffect(() => {
@@ -192,264 +188,132 @@ const CandidateView = ({ data }) => {
   };
 
   const popupApplications = popupStatus === 'ALL' ? applications : (popupStatus ? applications.filter(a => a.status === popupStatus) : []);
+  const popupTitle = { 'ACCEPTED': 'Accepted', 'REJECTED': 'Rejected', 'APPLIED': 'Pending', 'ALL': 'All' }[popupStatus] || '';
 
-  const popupTitle = {
-    'ACCEPTED': 'Accepted Applications',
-    'REJECTED': 'Rejected Applications',
-    'APPLIED': 'Pending Applications',
-    'ALL': 'All Applications'
-  }[popupStatus] || '';
-
-  const filteredApplications = applications.filter(app => {
-    if (statusFilter === 'ALL') return true;
-    return app.status === statusFilter;
-  });
+  const filteredApplications = applications.filter(app => statusFilter === 'ALL' || app.status === statusFilter);
 
   return (
     <>
-      {selectedJob && (
-        <ApplyModal
-          job={selectedJob}
-          isOpen={showApplyModal}
-          onClose={() => { setShowApplyModal(false); setSelectedJob(null); }}
-          onSuccess={handleApplySuccess}
-        />
-      )}
+      {selectedJob && <ApplyModal job={selectedJob} isOpen={showApplyModal} onClose={() => { setShowApplyModal(false); setSelectedJob(null); }} onSuccess={handleApplySuccess} />}
+      <JobDetailModal job={selected la-job} isOpen={showDetailModal} onClose={() => setShowDetailModal(false)} onApply={handleApplyFromModal} hasApplied={selectedJob ? appliedJobs.has(selectedJob.id) : false} />
 
-      <JobDetailModal
-        job={selectedJob}
-        isOpen={showDetailModal}
-        onClose={() => setShowDetailModal(false)}
-        onApply={handleApplyFromModal}
-        hasApplied={selectedJob ? appliedJobs.has(selectedJob.id) : false}
-      />
-
-      {/* Popup overlay */}
       {popupStatus && (
-        <div
-          style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 1000
-          }}
-          onClick={() => setPopupStatus(null)}
-        >
-          <div
-            className="glass-panel"
-            style={{width: '90%', maxWidth: '560px', maxHeight: '80vh', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden'}}
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Popup header */}
-            <div style={{padding: '1.5rem', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-              <h3 style={{margin: 0}}>{popupTitle}</h3>
-              <button onClick={() => setPopupStatus(null)} style={{background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.5rem', lineHeight: 1}}>×</button>
-            </div>
-            {/* Popup body */}
-            <div style={{padding: '1rem', overflowY: 'auto', flex: 1}}>
+        <div className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6" onClick={() => setPopupStatus(null)}>
+          <GlassPanel className="w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden" glow={true} onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-b border-white/10 flex justify-between items-center">
+              <CinematicText variant="h3">{popupTitle}</CinematicText>
+              <button onClick={() => setPopupStatus(null)} className="text-white/40 hover:text-white transition-colors text-2xl">×</button>
+            </div_div>
+            <div className="p-4 overflow-y-auto flex-1 gap-2 flex flex-col">
               {loadingApps ? (
-                <p style={{textAlign: 'center', color: 'var(--text-muted)', padding: '2rem'}}>Loading...</p>
+                <div className="text-center py-12 cinematic-text text-white/30">Loading...</div>
               ) : popupApplications.length === 0 ? (
-                <p style={{textAlign: 'center', color: 'var(--text-muted)', padding: '2rem'}}>No {popupStatus.toLowerCase()} applications.</p>
+                <div className="text-center py-12 cinematic-text text-white/30">No records found.</div>
               ) : (
-                <div style={{display: 'grid', gap: '0.5rem'}}>
-                  {popupApplications.map((app, idx) => {
-                    const statusStyle = getStatusColor(app.status);
-                    return (
-                      <div key={idx} style={{
-                        padding: '0.75rem 1rem',
-                        borderRadius: 'var(--radius-sm)',
-                        background: 'rgba(255,255,255,0.03)',
-                        border: '1px solid rgba(255,255,255,0.06)',
-                        display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-                      }}>
-                        <div>
-                          <div style={{fontWeight: '600', fontSize: '0.9rem'}}>{app.jobTitle}</div>
-                          <div style={{color: 'var(--text-muted)', fontSize: '0.8rem'}}>{app.company}</div>
-                        </div>
-                        <span style={{padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', background: statusStyle.bg, color: statusStyle.color}}>
-                          {app.status}
-                        </span>
+                popupApplications.map((app, idx) => {
+                  const s = getStatusColor(app.status);
+                  return (
+                    <div key={idx} className="p-3 rounded-xl bg-white/5 border border-white/10 flex justify-between items-center">
+                      <div>
+                        <div className="text-sm font-medium text-white">{app.jobTitle}</div>
+                        <div className="text-xs text-white/40">{app.company}</div>
                       </div>
-                    );
-                  })}
-                </div>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] cinematic-text" style={{background: s.bg, color: s.color}}>{app.status}</span>
+                    </div>
+                  );
+                })
               )}
-            </div>
-          </div>
+            </div_div>
+          </GlassPanel>
         </div>
       )}
 
-      {/* Stats Row - each clickable, opens popup */}
-      <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem', marginBottom: '2rem'}}>
-        <StatCard title="Total Applications" value={getStatusCount('ALL')} icon={<FileText />} color="59, 130, 246" onClick={() => setPopupStatus('ALL')} />
-        <StatCard title="Accepted" value={getStatusCount('ACCEPTED')} icon={<CheckCircle />} color="16, 185, 129" onClick={() => setPopupStatus('ACCEPTED')} />
-        <StatCard title="Pending" value={getStatusCount('APPLIED')} icon={<Clock />} color="245, 158, 11" onClick={() => setPopupStatus('APPLIED')} />
-        <StatCard title="Rejected" value={getStatusCount('REJECTED')} icon={<XCircle />} color="239, 68, 68" onClick={() => setPopupStatus('REJECTED')} />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <StatCard title="Total Applications" value={getStatusCount('ALL')} icon={<FileText size={20}/>} color="59, 130, 246" onClick={() => setPopupStatus('ALL')} active={popupStatus === 'ALL'} />
+        <StatCard title="Accepted" value={getStatusCount('ACCEPTED')} icon={<CheckCircle size={20}/>} color="16, 185, 129" onClick={() => setPopupStatus('ACCEPTED')} active={popupStatus === 'ACCEPTED'} />
+        <StatCard title="Pending" value={getStatusCount('APPLIED')} icon={<Clock size={20}/>} color="245, 158, 11" onClick={() => setPopupStatus('APPLIED')} active={popupStatus === 'APPLIED'} />
+        <StatCard title="Rejected" value={getStatusCount('REJECTED')} icon={<XCircle size={20}/>} color="239, 68, 68" onClick={() => setPopupStatus('REJECTED')} active={popupStatus === 'REJECTED'} />
       </div>
 
-      {/* Two always-visible sections side by side */}
-      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem'}}>
-
-        {/* My Applications */}
-        <div>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
-            <h3>My Applications</h3>
-            <button className="btn btn-secondary" style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}} onClick={fetchMyApplications}>Refresh</button>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <CinematicText variant="h3">My Application Feed</CinematicText>
+            <button className="cinematic-text text-[10px] text-p3cyan border border-p3cyan/30 px-3 py-1 rounded-full hover:bg-p3cyan/20 transition-all" onClick={() => fetchMyApplications()}>Refresh</button>
           </div>
-          <div style={{display: 'flex', gap: '0.4rem', marginBottom: '0.75rem', flexWrap: 'wrap'}}>
+
+          <div className="flex gap-2 mb-4">
             {['ALL', 'APPLIED', 'ACCEPTED', 'REJECTED'].map(s => (
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
-                style={{
-                  padding: '0.25rem 0.75rem',
-                  borderRadius: '1rem',
-                  fontSize: '0.75rem',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: '500',
-                  background: statusFilter === s ? 'var(--primary)' : 'rgba(255,255,255,0.08)',
-                  color: statusFilter === s ? 'white' : 'var(--text-muted)'
-                }}
+                className={`px-3 py-1 rounded-full text-[10px] cinematic-text transition-all ${statusFilter === s ? 'bg-p3cyan text-p3midnight' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
               >
                 {s.charAt(0) + s.slice(1).toLowerCase()}
               </button>
             ))}
           </div>
-          <div className="glass-panel" style={{padding: '1rem', minHeight: '200px'}}>
-            {loadingApps ? (
-              <p style={{textAlign: 'center', color: 'var(--text-muted)', padding: '2rem'}}>Loading...</p>
-            ) : filteredApplications.length === 0 ? (
-              <p style={{textAlign: 'center', color: 'var(--text-muted)', padding: '2rem'}}>
-                {statusFilter === 'ALL' ? 'No applications yet.' : `No ${statusFilter.toLowerCase()} applications.`}
-              </p>
-            ) : (
-              <div style={{display: 'grid', gap: '0.5rem', maxHeight: '380px', overflowY: 'auto'}}>
-                {filteredApplications.map((app, idx) => {
-                  const statusStyle = getStatusColor(app.status);
-                  return (
-                    <div key={idx} style={{
-                      padding: '0.6rem 0.8rem',
-                      borderRadius: 'var(--radius-sm)',
-                      background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      gap: '0.5rem'
-                    }}>
-                      <div style={{minWidth: 0}}>
-                        <div style={{fontWeight: '600', fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{app.jobTitle}</div>
-                        <div style={{color: 'var(--text-muted)', fontSize: '0.75rem'}}>{app.company}</div>
-                      </div>
-                      <span style={{
-                        padding: '0.15rem 0.5rem',
-                        borderRadius: '4px',
-                        fontSize: '0.7rem',
-                        background: statusStyle.bg,
-                        color: statusStyle.color,
-                        whiteSpace: 'nowrap',
-                        flexShrink: 0
-                      }}>
-                        {app.status}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+
+          <GlassPanel className="p-4 min-h-[400px] space-y-2">
+            {loadingApps ? <div className="py-12 text-center cinematic-text text-white/30">Loading...</div> :
+             filteredApplications.length === 0 ? <div className="py-12 text-center cinematic-text text-white/30">No records.</div> :
+             filteredApplications.map((app, idx) => {
+               const s = getStatusColor(app.status);
+               return (
+                 <div key={idx} className="p-3 rounded-lg bg-white/5 border border-white/5 flex justify-between items-center group hover:bg-white/10 transition-all">
+                   <div>
+                     <div className="text-sm font-medium text-white group-hover:text-p3cyan transition-colors">{app.jobTitle}</div>
+                     <div className="text-xs text-white/40">{app.company}</div>
+                   </div>
+                   <span className="px-2 py-0.5 rounded-full text-[10px] cinematic-text" style={{background: s.bg, color: s.color}}>{app.status}</span>
+                 </div>
+               );
+             })}
+            </GlassPanel>
           </div>
-          {appTotalPages > 1 && (
-            <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem'}}>
-              <button
-                className="btn btn-secondary"
-                style={{padding: '0.25rem 0.6rem', fontSize: '0.75rem'}}
-                disabled={appPage === 0}
-                onClick={() => fetchMyApplications(appPage - 1)}
-              >Prev</button>
-              <span style={{fontSize: '0.75rem', color: 'var(--text-muted)'}}>Page {appPage + 1} of {appTotalPages}</span>
-              <button
-                className="btn btn-secondary"
-                style={{padding: '0.25rem 0.6rem', fontSize: '0.75rem'}}
-                disabled={appPage >= appTotalPages - 1}
-                onClick={() => fetchMyApplications(appPage + 1)}
-              >Next</button>
-            </div>
-          )}
         </div>
 
-        {/* Find Jobs */}
-        <div>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem'}}>
-            <h3>Find Jobs</h3>
-            <button className="btn btn-secondary" style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}} onClick={fetchBrowseJobs}>Refresh</button>
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <CinematicText variant="h3">Neural Job Search</CinematicText>
+            <button className="cinematic-text text-[10px] text-p3cyan border border-p3cyan/30 px-3 py-1 rounded-full hover:bg-p3cyan/20 transition-all" onClick={fetchBrowseJobs}>Refresh</button>
           </div>
-          <div style={{display: 'flex', gap: '0.5rem', marginBottom: '0.75rem'}}>
-            <input
-              type="text"
-              placeholder="Search jobs..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') fetchBrowseJobs(); }}
-              style={{flex: 1, padding: '0.5rem 1rem', borderRadius: '1rem', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', color: 'white', fontSize: '0.85rem'}}
-            />
-            <button className="btn btn-primary" style={{padding: '0.5rem 1rem', fontSize: '0.85rem'}} onClick={fetchBrowseJobs}>Search</button>
+          <div className="flex gap-3 mb-4">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Filter potential roles..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') fetchBrowseJobs(); }}
+                className="w-full pl-4 pr-4 py-2 bg-white/5 border border-white/10 rounded-full text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-p3cyan/50 transition-all"
+              />
+            </div>
+            <RippleButton onClick={fetchBrowseJobs} className="text-xs px-6">Search</RippleButton>
           </div>
-          <div className="glass-panel" style={{padding: '1rem', minHeight: '200px'}}>
-            {loadingJobs ? (
-              <p style={{textAlign: 'center', color: 'var(--text-muted)', padding: '2rem'}}>Loading...</p>
-            ) : jobs.length === 0 ? (
-              <p style={{textAlign: 'center', color: 'var(--text-muted)', padding: '2rem'}}>No jobs found.</p>
-            ) : (
-              <div style={{display: 'grid', gap: '0.5rem', maxHeight: '380px', overflowY: 'auto'}}>
-                {jobs.map(job => {
-                  const jobTypeColor = job.jobType === 'REMOTE' ? '#10b981' : job.jobType === 'HYBRID' ? '#7c3aed' : job.jobType === 'ONSITE' ? '#3b82f6' : '#f59e0b';
-                  return (
-                  <div key={job.id} style={{
-                    padding: '0.6rem 0.8rem',
-                    borderRadius: 'var(--radius-sm)',
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}>
-                    <div style={{minWidth: 0}}>
-                      <div style={{fontWeight: '600', fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{job.title}</div>
-                      <div style={{color: 'var(--text-muted)', fontSize: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center'}}>
-                        <span>{job.company}</span>
-                        <span>·</span>
-                        <span>{job.location}</span>
-                        {job.jobType && (
-                          <span style={{background: `${jobTypeColor}20`, color: jobTypeColor, padding: '0.1rem 0.4rem', borderRadius: '0.5rem', fontSize: '0.65rem', fontWeight: '600'}}>{job.jobType}</span>
-                        )}
-                        <span style={{color: '#10b981'}}>{getCurrencySymbol(job.currency)}{job.salary?.toLocaleString()}</span>
-                      </div>
-                    </div>
-                    <div style={{display: 'flex', gap: '0.25rem', flexShrink: 0}}>
-                      <button
-                        className="btn btn-secondary"
-                        style={{padding: '0.25rem 0.5rem', fontSize: '0.7rem', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.2rem'}}
-                        onClick={() => handleViewDetails(job)}
-                      >
-                        <Eye size={12} /> Details
-                      </button>
-                      <button
-                        className="btn btn-primary"
-                        style={{padding: '0.25rem 0.5rem', fontSize: '0.7rem', whiteSpace: 'nowrap'}}
-                        disabled={appliedJobs.has(job.id)}
-                        onClick={() => handleApply(job)}
-                      >
-                        {appliedJobs.has(job.id) ? 'Applied' : 'Apply'}
-                      </button>
-                    </div>
-                  </div>
-                  );
-                })}
-              </div>
-            )}
+          <GlassPanel className="p-4 min-h-[400px] space-y-3">
+            {loadingJobs ? <div className="py-12 text-center cinematic-text text-white/30">Loading...</div> :
+             jobs.length === 0 ? <div className="py-12 text-center cinematic-text text-white/30">No results.</div> :
+             jobs.map(job => {
+               const color = job.jobType === 'REMOTE' ? '#10b981' : job.jobType === 'HYBRID' ? '#7c3aed' : job.jobType === 'ONSITE' ? '#3b82f6' : '#f59e0b';
+               return (
+                 <div key={job.id} className="p-3 rounded-lg bg-white/5 border border-white/5 flex justify-between items-center group hover:bg-white/10 transition-all">
+                   <div className="min-w-0">
+                     <div className="text-sm font-medium text-white group-hover:text-p3cyan transition-colors truncate">{job.title}</div>
+                     <div className="text-xs text-white/40 flex gap-2 flex-wrap">
+                       <span>{job.company}</span><span>·</span><span>{job.location}</span>
+                       <span className="px-1 rounded-sm" style={{color: color}}>{job.jobType}</span>
+                       <span className="text-p3cyan/80">{getCurrencySymbol(job.currency)}{job.salary?.toLocaleString()}</span>
+                     </div>
+                   </div>
+                   <div className="flex gap-2 shrink-0">
+                     <button className="p-1.5 rounded-full bg-white/5 text-white/60 hover:text-p3cyan transition-colors" onClick={() => handleViewDetails(job)}><Eye size={12} /></button>
+                     <RippleButton onClick={() => handleApply(job)} variant="primary" className="py-1 px-3 text-[10px]">{appliedJobs.has(job.id) ? 'Applied' : 'Apply'}</RippleButton>
+                   </div>
+                 </div>
+               );
+             })}
+            </GlassPanel>
           </div>
         </div>
       </div>
@@ -458,12 +322,12 @@ const CandidateView = ({ data }) => {
 };
 
 const EmployerView = ({ data }) => {
-  const [activeTab, setActiveTab] = useState(null); // 'myjobs' | 'myapplicants'
+  const [activeTab, setActiveTab] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
   const [actionLoading, setActionLoading] = useState({});
-  const [appFilter, setAppFilter] = useState('ALL'); // 'ALL' | 'ACTIVE' | 'REJECTED'
+  const [appFilter, setAppFilter] = useState('ALL');
   const [showPostJobModal, setShowPostJobModal] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
   const [appPage, setAppPage] = useState(0);
@@ -490,11 +354,7 @@ const EmployerView = ({ data }) => {
     try {
       const res = await api.get('/jobs/my');
       setJobs(res.data || []);
-    } catch (err) {
-      console.error('Failed to fetch jobs', err);
-    } finally {
-      setLoadingList(false);
-    }
+    } catch (err) { console.error(err); } finally { setLoadingList(false); }
   };
 
   const fetchMyApplications = async (page = 0) => {
@@ -504,15 +364,10 @@ const EmployerView = ({ data }) => {
       setApplications(res.data.content || []);
       setAppTotalPages(res.data.totalPages || 0);
       setAppPage(page);
-    } catch (err) {
-      console.error('Failed to fetch applications', err);
-    } finally {
-      setLoadingList(false);
-    }
+    } catch (err) { console.error(err); } finally { setLoadingList(false); }
   };
 
   const handleCardClick = (tab) => {
-    console.log('Card clicked, tab:', tab, 'current activeTab:', activeTab);
     if (activeTab === tab) {
       setActiveTab(null);
     } else {
@@ -528,7 +383,6 @@ const EmployerView = ({ data }) => {
       await api.put(`/applications/${appId}/${action}`);
       fetchMyApplications();
     } catch (err) {
-      console.error('Failed to update application', err);
       toast.error('Failed to update application status');
     } finally {
       setActionLoading(prev => {
@@ -545,7 +399,6 @@ const EmployerView = ({ data }) => {
       await api.delete(`/applications/${appId}`);
       fetchMyApplications();
     } catch (err) {
-      console.error('Failed to remove application', err);
       toast.error('Failed to remove application');
     }
   };
@@ -561,7 +414,6 @@ const EmployerView = ({ data }) => {
       link.click();
       link.remove();
     } catch (err) {
-      console.error('Failed to download resume', err);
       toast.error('Failed to download resume');
     }
   };
@@ -578,11 +430,9 @@ const EmployerView = ({ data }) => {
       toast.success('Job deleted');
       fetchMyJobs();
     } catch (err) {
-      console.error('Failed to delete job', err);
       toast.error('Failed to delete job');
     }
   };
-
 
   const getStatusStyle = (status) => {
     if (status === 'ACCEPTED') return { bg: 'rgba(16, 185, 129, 0.2)', color: '#10b981' };
@@ -601,192 +451,113 @@ const EmployerView = ({ data }) => {
         job={editingJob}
         isEdit={!!editingJob}
       />
-      <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2rem'}}>
-        <StatCard title="Active Job Postings" value={data.totalJobsPosted} icon={<Briefcase />} color="124, 58, 237" onClick={() => handleCardClick('myjobs')} active={activeTab === 'myjobs'} />
-        <StatCard title="Total Applicants" value={data.totalApplicationsReceived} icon={<Users />} color="59, 130, 246" onClick={() => handleCardClick('myapplicants')} active={activeTab === 'myapplicants'} />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-12">
+        <StatCard title="Active Job Postings" value={data.totalJobsPosted} icon={<Briefcase size={20}/>} color="124, 58, 237" onClick={() => handleCardClick('myjobs')} active={activeTab === 'myjobs'} />
+        <StatCard title="Total Applicants" value={data.totalApplicationsReceived} icon={<Users size={20}/>} color="59, 130, 246" onClick={() => handleCardClick('myapplicants')} active={activeTab === 'myapplicants'} />
       </div>
 
       {activeTab === 'myjobs' && (
-        <div>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
-            <h3>Your Job Postings</h3>
-            <button className="btn btn-primary" onClick={() => setShowPostJobModal(true)}>+ Post New Job</button>
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <CinematicText variant="h3">Management Sector: Postings</CinematicText>
+            <RippleButton onClick={() => setShowPostJobModal(true)} className="text-xs">+ Post New Job</RippleButton>
           </div>
-          <div className="glass-panel" style={{padding: '1.5rem'}}>
+          <GlassPanel className="overflow-hidden">
             {loadingList ? (
-              <p style={{textAlign: 'center', color: 'var(--text-muted)'}}>Loading...</p>
+              <div className="py-12 text-center cinematic-text text-white/30">Loading...</div>
             ) : jobs.length === 0 ? (
-              <p style={{textAlign: 'center', color: 'var(--text-muted)'}}>No job postings yet.</p>
+              <div className="py-12 text-center cinematic-text text-white/30">No postings found.</div>
             ) : (
-              <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem'}}>
-                <thead>
-                  <tr style={{borderBottom: '1px solid rgba(255,255,255,0.1)', textAlign: 'left'}}>
-                    <th style={{padding: '0.75rem 0.5rem'}}>Title</th>
-                    <th style={{padding: '0.75rem 0.5rem'}}>Company</th>
-                    <th style={{padding: '0.75rem 0.5rem'}}>Location</th>
-                    <th style={{padding: '0.75rem 0.5rem', textAlign: 'right'}}>Salary</th>
-                    <th style={{padding: '0.75rem 0.5rem', textAlign: 'right'}}>Actions</th>
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-white/10 text-white/40 cinematic-text text-[10px]">
+                  <tr>
+                    <th className="p-4 font-light">Title</th>
+                    <th className="p-4 font-light">Company</th>
+                    <th className="p-4 font-light">Location</th>
+                    <th className="p-4 font-light text-right">Salary</th>
+                    <th className="p-4 font-light text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {jobs.map(job => (
-                    <tr key={job.id} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
-                      <td style={{padding: '0.75rem 0.5rem'}}>{job.title}</td>
-                      <td style={{padding: '0.75rem 0.5rem', color: 'var(--text-muted)'}}>{job.company}</td>
-                      <td style={{padding: '0.75rem 0.5rem', color: 'var(--text-muted)'}}>{job.location}</td>
-                      <td style={{padding: '0.75rem 0.5rem', textAlign: 'right', color: '#10b981'}}>${job.salary?.toLocaleString()}</td>
-                      <td style={{padding: '0.75rem 0.5rem', textAlign: 'right'}}>
-                        <button
-                          className="btn btn-secondary"
-                          style={{padding: '0.25rem 0.5rem', marginRight: '0.25rem'}}
-                          onClick={() => handleEditJob(job)}
-                          title="Edit job"
-                        >
-                          <Pencil size={12} />
-                        </button>
-                        <button
-                          className="btn btn-secondary"
-                          style={{padding: '0.25rem 0.5rem', color: '#ef4444'}}
-                          onClick={() => handleDeleteJob(job)}
-                          title="Delete job"
-                        >
-                          <Trash size={12} />
-                        </button>
+                    <tr key={job.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
+                      <td className="p-4 font-medium text-white group-hover:text-p3cyan transition-colors">{job.title}</td>
+                      <td className="p-4 text-white/40">{job.company}</td>
+                      <td className="p-4 text-white/40">{job.location}</td>
+                      <td className="p-4 text-right text-p3cyan font-medium">${job.salary?.toLocaleString()}</td>
+                      <td className="p-4 text-right flex justify-end gap-2">
+                        <button className="p-1.5 rounded-full bg-white/5 text-white/60 hover:text-white transition-colors" onClick={() => handleEditJob(job)}><Pencil size={12} /></button>
+                        <button className="p-1.5 rounded-full bg-white/5 text-red-400 hover:bg-red-400/20 transition-colors" onClick={() => handleDeleteJob(job)}><Trash size={12} /></button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
-          </div>
+          </GlassPanel>
         </div>
       )}
 
       {activeTab === 'myapplicants' && (
-        <div>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
-            <h3>Applicants for Your Jobs</h3>
-            <div style={{display: 'flex', gap: '0.4rem'}}>
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <CinematicText variant="h3">Applicant Neural Feed</CinematicText>
+            <div className="flex gap-2">
               {['ALL', 'ACTIVE', 'REJECTED'].map(f => (
                 <button
                   key={f}
                   onClick={() => setAppFilter(f)}
-                  style={{
-                    padding: '0.25rem 0.75rem',
-                    borderRadius: '1rem',
-                    fontSize: '0.75rem',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    background: appFilter === f ? 'var(--primary)' : 'rgba(255,255,255,0.08)',
-                    color: appFilter === f ? 'white' : 'var(--text-muted)'
-                  }}
+                  className={`px-3 py-1 rounded-full text-[10px] cinematic-text transition-all ${appFilter === f ? 'bg-p3cyan text-p3midnight' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
                 >
                   {f.charAt(0) + f.slice(1).toLowerCase()}
                 </button>
               ))}
             </div>
           </div>
-          <div className="glass-panel" style={{padding: '1.5rem'}}>
+          <GlassPanel className="p-6 space-y-8">
             {loadingList ? (
-              <p style={{textAlign: 'center', color: 'var(--text-muted)'}}>Loading...</p>
+              <div className="py-12 text-center cinematic-text text-white/30">Loading...</div>
             ) : filteredByJob.length === 0 ? (
-              <p style={{textAlign: 'center', color: 'var(--text-muted)'}}>No applicants found.</p>
+              <div className="py-12 text-center cinematic-text text-white/30">No applicants.</div>
             ) : (
               filteredByJob.map(group => (
-                <div key={group.jobId} style={{marginBottom: '1.5rem'}}>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)'}}>
-                    <h4 style={{margin: 0, fontSize: '0.95rem'}}>{group.jobTitle}</h4>
-                    <span style={{fontSize: '0.75rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.06)', padding: '0.15rem 0.5rem', borderRadius: '1rem'}}>
-                      {group.applications.length} applicant{group.applications.length !== 1 ? 's' : ''}
+                <div key={group.jobId} className="space-y-3">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                    <h4 className="text-sm font-medium text-white">{group.jobTitle}</h4>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] cinematic-text bg-white/5 text-white/40 border border-white/10">
+                      {group.applications.length} candidates
                     </span>
                   </div>
-                  <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem'}}>
-                    <thead>
-                      <tr style={{borderBottom: '1px solid rgba(255,255,255,0.06)', textAlign: 'left'}}>
-                        <th style={{padding: '0.5rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '500'}}>Candidate</th>
-                        <th style={{padding: '0.5rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '500'}}>Email</th>
-                        <th style={{padding: '0.5rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '500'}}>Applied</th>
-                        <th style={{padding: '0.5rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '500'}}>Status</th>
-                        <th style={{padding: '0.5rem 0.5rem', textAlign: 'right', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '500'}}>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {group.applications.map(app => {
-                        const statusStyle = getStatusStyle(app.status);
-                        const isLoading = actionLoading[app.id];
-                        return (
-                          <tr key={app.id} style={{borderBottom: '1px solid rgba(255,255,255,0.04)'}}>
-                            <td style={{padding: '0.6rem 0.5rem', fontWeight: '500'}}>{app.candidateName}</td>
-                            <td style={{padding: '0.6rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.8rem'}}>{app.candidateEmail}</td>
-                            <td style={{padding: '0.6rem 0.5rem', color: 'var(--text-muted)', fontSize: '0.8rem'}}>{new Date(app.appliedAt).toLocaleDateString()}</td>
-                            <td style={{padding: '0.6rem 0.5rem'}}>
-                              <span style={{
-                                padding: '0.2rem 0.5rem',
-                                borderRadius: '4px',
-                                fontSize: '0.7rem',
-                                background: statusStyle.bg,
-                                color: statusStyle.color
-                              }}>
-                                {app.status}
-                              </span>
-                            </td>
-                            <td style={{padding: '0.6rem 0.5rem', textAlign: 'right'}}>
-                              <div style={{display: 'flex', gap: '0.25rem', justifyContent: 'flex-end', flexWrap: 'wrap'}}>
-                                {app.status === 'APPLIED' && (
-                                  <button className="btn btn-secondary" style={{padding: '0.2rem 0.5rem', fontSize: '0.7rem'}} disabled={!!isLoading} onClick={() => updateStatus(app.id, 'review')}>
-                                    {isLoading === 'review' ? '...' : 'Review'}
-                                  </button>
-                                )}
-                                {app.status === 'REVIEWED' && (
-                                  <button className="btn btn-secondary" style={{padding: '0.2rem 0.5rem', fontSize: '0.7rem'}} disabled={!!isLoading} onClick={() => updateStatus(app.id, 'interview')}>
-                                    {isLoading === 'interview' ? '...' : 'Interview'}
-                                  </button>
-                                )}
-                                {app.status === 'INTERVIEWING' && (
-                                  <button className="btn" style={{padding: '0.2rem 0.5rem', fontSize: '0.7rem', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', border: 'none'}} disabled={!!isLoading} onClick={() => updateStatus(app.id, 'accept')}>
-                                    {isLoading === 'accept' ? '...' : 'Accept'}
-                                  </button>
-                                )}
-                                {app.status !== 'ACCEPTED' && app.status !== 'REJECTED' && (
-                                  <button className="btn" style={{padding: '0.2rem 0.5rem', fontSize: '0.7rem', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: 'none'}} disabled={!!isLoading} onClick={() => updateStatus(app.id, 'reject')}>
-                                    {isLoading === 'reject' ? '...' : 'Reject'}
-                                  </button>
-                                )}
-                                <button className="btn btn-secondary" style={{padding: '0.2rem 0.5rem', fontSize: '0.7rem'}} disabled={!!isLoading} onClick={() => downloadResume(app.id)}>
-                                  Resume
-                                </button>
-                                <button className="btn" style={{padding: '0.2rem 0.5rem', fontSize: '0.7rem', background: 'rgba(100,100,100,0.2)', color: '#9ca3af', border: 'none'}} onClick={() => removeApplication(app.id)}>
-                                    Remove
-                                  </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                  <div className="grid grid-cols-1 gap-2">
+                    {group.applications.map(app => {
+                      const s = getStatusStyle(app.status);
+                      const isLoading = actionLoading[app.id];
+                      return (
+                        <div key={app.id} className="p-3 rounded-xl bg-white/5 border border-white/5 flex justify-between items-center group hover:bg-white/10 transition-all">
+                          <div>
+                            <div className="text-xs font-medium text-white group-hover:text-p3cyan transition-colors">{app.candidateName}</div>
+                            <div className="text-[10px] text-white/40">{app.candidateEmail}</div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] cinematic-text" style={{background: s.bg, color: s.color}}>{app.status}</span>
+                            <div className="flex gap-1">
+                              {app.status === 'APPLIED' && <RippleButton onClick={() => updateStatus(app.id, 'review')} className="py-1 px-2 text-[10px]">Review</RippleButton>}
+                              {app.status === 'REVIEWED' && <RippleButton onClick={() => updateStatus(app.id, 'interview')} className="py-1 px-2 text-[10px]">Interview</RippleButton>}
+                              {app.status === 'INTERVIEWING' && <RippleButton onClick={() => updateStatus(app.id, 'accept')} className="py-1 px-2 text-[10px] bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Accept</RippleButton>}
+                              {app.status !== 'ACCEPTED' && app.status !== 'REJECTED' && <RippleButton onClick={() => updateStatus(app.id, 'reject')} className="py-1 px-2 text-[10px] bg-red-500/20 text-red-400 border-red-500/30">Reject</RippleButton>}
+                              <button className="p-1.5 rounded-full bg-white/5 text-white/60 hover:text-white transition-colors" onClick={() => downloadResume(app.id)}><FileText size={12} /></button>
+                              <button className="p-1.5 rounded-full bg-white/5 text-red-400/60 hover:bg-red-400/20 transition-colors" onClick={() => removeApplication(app.id)}><Trash size={12} /></button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               ))
             )}
-          </div>
-          {appTotalPages > 1 && (
-            <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem'}}>
-              <button
-                className="btn btn-secondary"
-                style={{padding: '0.25rem 0.6rem', fontSize: '0.75rem'}}
-                disabled={appPage === 0}
-                onClick={() => fetchMyApplications(appPage - 1)}
-              >Prev</button>
-              <span style={{fontSize: '0.75rem', color: 'var(--text-muted)'}}>Page {appPage + 1} of {appTotalPages}</span>
-              <button
-                className="btn btn-secondary"
-                style={{padding: '0.25rem 0.6rem', fontSize: '0.75rem'}}
-                disabled={appPage >= appTotalPages - 1}
-                onClick={() => fetchMyApplications(appPage + 1)}
-              >Next</button>
-            </div>
-          )}
+          </GlassPanel>
         </div>
       )}
     </>
@@ -798,11 +569,11 @@ const AdminView = ({ data }) => {
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [adminAppActionLoading, setAdminAppActionLoading] = useState({});
-  const [activeTab, setActiveTab] = useState(null); // 'users' | 'jobs' | 'applications'
+  const [activeTab, setActiveTab] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
-  const [adminAppFilter, setAdminAppFilter] = useState('ALL'); // 'ALL' | 'ACTIVE' | 'REJECTED'
+  const [adminAppFilter, setAdminAppFilter] = useState('ALL');
 
   const adminFilteredByJob = (() => {
     const apps = adminAppFilter === 'ALL' ? applications
@@ -827,11 +598,7 @@ const AdminView = ({ data }) => {
     try {
       const res = await api.get('/admin/users');
       setUsers(res.data);
-    } catch (err) {
-      console.error('Failed to fetch users', err);
-    } finally {
-      setLoadingUsers(false);
-    }
+    } catch (err) { console.error(err); } finally { setLoadingUsers(false); }
   };
 
   const fetchJobs = async () => {
@@ -839,11 +606,7 @@ const AdminView = ({ data }) => {
     try {
       const res = await api.get('/jobs');
       setJobs(res.data.content || []);
-    } catch (err) {
-      console.error('Failed to fetch jobs', err);
-    } finally {
-      setLoadingList(false);
-    }
+    } catch (err) { console.error(err); } finally { setLoadingList(false); }
   };
 
   const fetchApplications = async () => {
@@ -851,11 +614,7 @@ const AdminView = ({ data }) => {
     try {
       const res = await api.get('/applications');
       setApplications(res.data || []);
-    } catch (err) {
-      console.error('Failed to fetch applications', err);
-    } finally {
-      setLoadingList(false);
-    }
+    } catch (err) { console.error(err); } finally { setLoadingList(false); }
   };
 
   const handleCardClick = (tab) => {
@@ -881,12 +640,11 @@ const AdminView = ({ data }) => {
   };
 
   const deleteAdminApplication = async (appId) => {
-    if (!window.confirm('Remove this application? This cannot be undone.')) return;
+    if (!window.confirm('Remove this application?')) return;
     try {
       await api.delete(`/applications/${appId}`);
       fetchApplications();
     } catch (err) {
-      console.error('Failed to remove application', err);
       toast.error('Failed to remove application');
     }
   };
@@ -897,7 +655,6 @@ const AdminView = ({ data }) => {
       await api.put(`/applications/${appId}/${action}`);
       fetchApplications();
     } catch (err) {
-      console.error('Failed to update application', err);
       toast.error('Failed to update application status');
     } finally {
       setAdminAppActionLoading(prev => {
@@ -919,11 +676,9 @@ const AdminView = ({ data }) => {
       link.click();
       link.remove();
     } catch (err) {
-      console.error('Failed to download resume', err);
       toast.error('Failed to download resume');
     }
   };
-
 
   const getAdminStatusStyle = (status) => {
     if (status === 'ACCEPTED') return { bg: 'rgba(16, 185, 129, 0.2)', color: '#10b981' };
@@ -935,210 +690,134 @@ const AdminView = ({ data }) => {
 
   return (
     <>
-      <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem'}}>
-        <StatCard title="Total Users" value={data.totalUsers} icon={<Users />} color="59, 130, 246" onClick={() => handleCardClick('users')} active={activeTab === 'users'} />
-        <StatCard title="Total Jobs" value={data.totalJobs} icon={<Briefcase />} color="124, 58, 237" onClick={() => handleCardClick('jobs')} active={activeTab === 'jobs'} />
-        <StatCard title="Total Applications" value={data.totalApplications} icon={<FileText />} color="16, 185, 129" onClick={() => handleCardClick('applications')} active={activeTab === 'applications'} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <StatCard title="Total Users" value={data.totalUsers} icon={<Users size={20}/>} color="59, 130, 246" onClick={() => handleCardClick('users')} active={activeTab === 'users'} />
+        <StatCard title="Total Jobs" value={data.totalJobs} icon={<Briefcase size={20}/>} color="124, 58, 237" onClick={() => handleCardClick('jobs')} active={activeTab === 'jobs'} />
+        <StatCard title="Total Applications" value={data.totalApplications} icon={<FileText size={20}/>} color="16, 185, 129" onClick={() => handleCardClick('applications')} active={activeTab === 'applications'} />
       </div>
 
       {activeTab === 'users' && (
-        <div>
-          <h3 style={{marginBottom: '1rem'}}>User Management</h3>
-          <div className="glass-panel" style={{padding: '1.5rem'}}>
-            {loadingUsers ? (
-              <p style={{textAlign: 'center', color: 'var(--text-muted)'}}>Loading users...</p>
-            ) : (
-              <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem'}}>
-                <thead>
-                  <tr style={{borderBottom: '1px solid rgba(255,255,255,0.1)', textAlign: 'left'}}>
-                    <th style={{padding: '0.75rem 0.5rem'}}>Username</th>
-                    <th style={{padding: '0.75rem 0.5rem'}}>Email</th>
-                    <th style={{padding: '0.75rem 0.5rem'}}>Role</th>
-                    <th style={{padding: '0.75rem 0.5rem', textAlign: 'right'}}>Action</th>
+        <div className="space-y-6">
+          <CinematicText variant="h3">System User Directory</CinematicText>
+          <GlassPanel className="overflow-hidden">
+            {loadingUsers ? <div className="py-12 text-center cinematic-text text-white/30">Loading users...</div> : (
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-white/10 text-white/40 cinematic-text text-[10px]">
+                  <tr>
+                    <th className="p-4 font-light">Username</th>
+                    <th className="p-4 font-light">Email</th>
+                    <th className="p-4 font-light">Role</th>
+                    <th className="p-4 font-light text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map(user => (
-                    <tr key={user.id} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
-                      <td style={{padding: '0.75rem 0.5rem'}}>{user.username}</td>
-                      <td style={{padding: '0.75rem 0.5rem', color: 'var(--text-muted)'}}>{user.email}</td>
-                      <td style={{padding: '0.75rem 0.5rem'}}>
-                        <span style={{
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '4px',
-                          fontSize: '0.75rem',
-                          fontWeight: '500',
-                          background: user.role === 'ADMIN' ? 'rgba(239, 68, 68, 0.2)' : user.role === 'EMPLOYER' ? 'rgba(124, 58, 237, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                          color: user.role === 'ADMIN' ? '#ef4444' : user.role === 'EMPLOYER' ? '#7c3aed' : '#10b981'
-                        }}>
+                    <tr key={user.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="p-4 font-medium text-white">{user.username}</td>
+                      <td className="p-4 text-white/40">{user.email}</td>
+                      <td className="p-4">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] cinematic-text border ${user.role === 'ADMIN' ? 'bg-red-500/20 text-red-400 border-red-500/30' : user.role === 'EMPLOYER' ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'}`}>
                           {user.role}
                         </span>
                       </td>
-                      <td style={{padding: '0.75rem 0.5rem', textAlign: 'right'}}>
+                      <td className="p-4 text-right">
                         {user.role === 'CANDIDATE' && (
-                          <button
-                            className="btn btn-primary"
-                            style={{padding: '0.4rem 0.75rem', fontSize: '0.8rem'}}
-                            onClick={() => promoteUser(user.id)}
-                            disabled={actionLoading === user.id}
-                          >
-                            {actionLoading === user.id ? 'Promoting...' : 'Promote to Employer'}
-                          </button>
+                          <RippleButton onClick={() => promoteUser(user.id)} variant="primary" className="py-1 px-3 text-[10px]" disabled={actionLoading === user.id}>
+                            {actionLoading === user.id ? '...' : 'Promote'}
+                          </RippleButton>
                         )}
-                        {user.role === 'EMPLOYER' && (
-                          <span style={{color: 'var(--text-muted)', fontSize: '0.8rem'}}>—</span>
-                        )}
-                        {user.role === 'ADMIN' && (
-                          <span style={{color: 'var(--text-muted)', fontSize: '0.8rem'}}>Admin</span>
-                        )}
+                        {user.role !== 'CANDIDATE' && <span className="text-white/20 text-xs cinematic-text">Locked</span>}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
-          </div>
+          </GlassPanel>
         </div>
       )}
 
       {activeTab === 'jobs' && (
-        <div>
-          <h3 style={{marginBottom: '1rem'}}>All Jobs</h3>
-          <div className="glass-panel" style={{padding: '1.5rem'}}>
-            {loadingList ? (
-              <p style={{textAlign: 'center', color: 'var(--text-muted)'}}>Loading jobs...</p>
-            ) : jobs.length === 0 ? (
-              <p style={{textAlign: 'center', color: 'var(--text-muted)'}}>No jobs found.</p>
-            ) : (
-              <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem'}}>
-                <thead>
-                  <tr style={{borderBottom: '1px solid rgba(255,255,255,0.1)', textAlign: 'left'}}>
-                    <th style={{padding: '0.75rem 0.5rem'}}>Title</th>
-                    <th style={{padding: '0.75rem 0.5rem'}}>Company</th>
-                    <th style={{padding: '0.75rem 0.5rem'}}>Location</th>
-                    <th style={{padding: '0.75rem 0.5rem', textAlign: 'right'}}>Salary</th>
+        <div className="space-y-6">
+          <CinematicText variant="h3">Global Job Index</CinematicText>
+          <GlassPanel className="overflow-hidden">
+            {loadingList ? <div className="py-12 text-center cinematic-text text-white/30">Loading jobs...</div> : (
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-white/10 text-white/40 cinematic-text text-[10px]">
+                  <tr>
+                    <th className="p-4 font-light">Title</th>
+                    <th className="p-4 font-light">Company</th>
+                    <th className="p-4 font-light">Location</th>
+                    <th className="p-4 font-light text-right">Salary</th>
                   </tr>
                 </thead>
                 <tbody>
                   {jobs.map(job => (
-                    <tr key={job.id} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
-                      <td style={{padding: '0.75rem 0.5rem'}}>{job.title}</td>
-                      <td style={{padding: '0.75rem 0.5rem', color: 'var(--text-muted)'}}>{job.company}</td>
-                      <td style={{padding: '0.75rem 0.5rem', color: 'var(--text-muted)'}}>{job.location}</td>
-                      <td style={{padding: '0.75rem 0.5rem', textAlign: 'right', color: '#10b981'}}>${job.salary?.toLocaleString()}</td>
+                    <tr key={job.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                      <td className="p-4 font-medium text-white">{job.title}</td>
+                      <td className="p-4 text-white/40">{job.company}</td>
+                      <td className="p-4 text-white/40">{job.location}</td>
+                      <td className="p-4 text-right text-p3cyan font-medium">${job.salary?.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
-          </div>
+          </GlassPanel>
         </div>
       )}
 
       {activeTab === 'applications' && (
-        <div>
-          <h3 style={{marginBottom: '1rem'}}>All Applications</h3>
-          <div className="glass-panel" style={{padding: '1.5rem'}}>
-            {loadingList ? (
-              <p style={{textAlign: 'center', color: 'var(--text-muted)'}}>Loading applications...</p>
-            ) : applications.length === 0 ? (
-              <p style={{textAlign: 'center', color: 'var(--text-muted)'}}>No applications found.</p>
-            ) : (
-              <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem'}}>
-                <thead>
-                  <tr style={{borderBottom: '1px solid rgba(255,255,255,0.1)', textAlign: 'left'}}>
-                    <th style={{padding: '0.75rem 0.5rem'}}>Applicant</th>
-                    <th style={{padding: '0.75rem 0.5rem'}}>Job</th>
-                    <th style={{padding: '0.75rem 0.5rem'}}>Status</th>
-                    <th style={{padding: '0.75rem 0.5rem', textAlign: 'right'}}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {applications.map(app => {
-                    const statusStyle = getAdminStatusStyle(app.status);
-                    const isLoading = adminAppActionLoading[app.id];
-                    return (
-                      <tr key={app.id} style={{borderBottom: '1px solid rgba(255,255,255,0.05)'}}>
-                        <td style={{padding: '0.75rem 0.5rem'}}>{app.candidateName}</td>
-                        <td style={{padding: '0.75rem 0.5rem', color: 'var(--text-muted)'}}>{app.jobTitle}</td>
-                        <td style={{padding: '0.75rem 0.5rem'}}>
-                          <span style={{
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '4px',
-                            fontSize: '0.75rem',
-                            background: statusStyle.bg,
-                            color: statusStyle.color
-                          }}>
-                            {app.status}
-                          </span>
-                        </td>
-                        <td style={{padding: '0.75rem 0.5rem', textAlign: 'right'}}>
-                          <div style={{display: 'flex', gap: '0.3rem', justifyContent: 'flex-end', flexWrap: 'wrap'}}>
-                            {app.status !== 'INTERVIEWING' && (
-                              <button
-                                className="btn btn-secondary"
-                                style={{padding: '0.25rem 0.5rem', fontSize: '0.7rem'}}
-                                disabled={!!isLoading}
-                                onClick={() => updateAdminAppStatus(app.id, 'interview')}
-                              >
-                                {isLoading === 'interview' ? '...' : 'Interview'}
-                              </button>
-                            )}
-                            {app.status !== 'REVIEWED' && (
-                              <button
-                                className="btn btn-secondary"
-                                style={{padding: '0.25rem 0.5rem', fontSize: '0.7rem'}}
-                                disabled={!!isLoading}
-                                onClick={() => updateAdminAppStatus(app.id, 'review')}
-                              >
-                                {isLoading === 'review' ? '...' : 'Review'}
-                              </button>
-                            )}
-                            {app.status !== 'ACCEPTED' && (
-                              <button
-                                className="btn"
-                                style={{padding: '0.25rem 0.5rem', fontSize: '0.7rem', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', border: 'none'}}
-                                disabled={!!isLoading}
-                                onClick={() => updateAdminAppStatus(app.id, 'accept')}
-                              >
-                                {isLoading === 'accept' ? '...' : 'Accept'}
-                              </button>
-                            )}
-                            {app.status !== 'REJECTED' && (
-                              <button
-                                className="btn"
-                                style={{padding: '0.25rem 0.5rem', fontSize: '0.7rem', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: 'none'}}
-                                disabled={!!isLoading}
-                                onClick={() => updateAdminAppStatus(app.id, 'reject')}
-                              >
-                                {isLoading === 'reject' ? '...' : 'Reject'}
-                              </button>
-                            )}
-                            <button
-                              className="btn btn-secondary"
-                              style={{padding: '0.25rem 0.5rem', fontSize: '0.7rem'}}
-                              disabled={!!isLoading}
-                              onClick={() => downloadAdminResume(app.id)}
-                            >
-                              Download
-                            </button>
-                            <button
-                                className="btn"
-                                style={{padding: '0.25rem 0.5rem', fontSize: '0.7rem', background: 'rgba(100,100,100,0.2)', color: '#9ca3af', border: 'none'}}
-                                disabled={!!isLoading}
-                                onClick={() => deleteAdminApplication(app.id)}
-                              >
-                                Remove
-                              </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <CinematicText variant="h3">Global Application Feed</CinematicText>
+            <div className="flex gap-2">
+              {['ALL', 'ACTIVE', 'REJECTED'].map(f => (
+                <button key={f} onClick={() => setAdminAppFilter(f)} className={`px-3 py-1 rounded-full text-[10px] cinematic-text transition-all ${adminAppFilter === f ? 'bg-p3cyan text-p3midnight' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}>
+                  {f.charAt(0) + f.slice(1).toLowerCase()}
+                </button>
+              ))}
+            </div>
           </div>
+          <GlassPanel className="p-6 space-y-8">
+            {loadingList ? <div className="py-12 text-center cinematic-text text-white/30">Loading...</div> :
+             adminFilteredByJob.length === 0 ? <div className="py-12 text-center cinematic-text text-white/30">No records.</div> :
+             adminFilteredByJob.map(group => (
+               <div key={group.jobId} className="space-y-3">
+                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                   <h4 className="text-sm font-medium text-white">{group.jobTitle}</h4>
+                   <span className="px-2 py-0.5 rounded-full text-[10px] cinematic-text bg-white/5 text-white/40 border border-white/10">
+                     {group.applications.length} candidates
+                   </span>
+                 </div>
+                 <div className="grid grid-cols-1 gap-2">
+                   {group.applications.map(app => {
+                     const s = getAdminStatusStyle(app.status);
+                     const isLoading = adminAppActionLoading[app.id];
+                     return (
+                       <div key={app.id} className="p-3 rounded-xl bg-white/5 border border-white/5 flex justify-between items-center group hover:bg-white/10 transition-all">
+                         <div>
+                           <div className="text-xs font-medium text-white group-hover:text-p3cyan transition-colors">{app.candidateName}</div>
+                           <div className="text-[10px] text-white/40">{app.candidateEmail}</div>
+                         </div>
+                         <div className="flex items-center gap-3">
+                           <span className="px-2 py-0.5 rounded-full text-[10px] cinematic-text" style={{background: s.bg, color: s.color}}>{app.status}</span>
+                           <div className="flex gap-1">
+                             {app.status !== 'INTERVIEWING' && <RippleButton onClick={() => updateAdminAppStatus(app.id, 'interview')} className="py-1 px-2 text-[10px]">Interview</RippleButton>}
+                             {app.status !== 'REVIEWED' && <RippleButton onClick={() => updateAdminAppStatus(app.id, 'review')} className="py-1 px-2 text-[10px]">Review</SippleButton>}
+                             {app.status !== 'ACCEPTED' && <RippleButton onClick={() => updateAdminAppStatus(app.id, 'accept')} className="py-1 px-2 text-[10px] bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Accept</RippleButton>}
+                             {app.status !== 'REJECTED' && <RippleButton onClick={() => updateAdminAppStatus(app.id, 'reject')} className="py-1 px-2 text-[10px] bg-red-500/20 text-red-400 border-red-500/30">Reject</RippleButton>}
+                             <button className="p-1.5 rounded-full bg-white/5 text-white/60 hover:text-white transition-colors" onClick={() => downloadAdminResume(app.id)}><FileText size={12} /></button>
+                             <button className="p-1.5 rounded-full bg-white/5 text-red-400/60 hover:bg-red-400/20 transition-colors" onClick={() => deleteAdminApplication(app.id)}><Trash size={12} /></button>
+                           </div>
+                         </div>
+                       </div>
+                     );
+                   })}
+                 </div>
+               </div>
+             ))}
+          </GlassPanel>
         </div>
       )}
     </>

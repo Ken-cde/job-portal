@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import AtmosphericBackground from './components/AtmosphericBackground';
 import './App.css';
 
 // Import our new pages
@@ -54,9 +55,10 @@ function App() {
     <AuthProvider>
       <ToastProvider>
         <Router>
-          <div className="app-container">
+          <div className="relative min-h-screen w-full">
+            <AtmosphericBackground />
             <Navbar />
-            <main className="main-content">
+            <main className="relative z-10 pt-24 px-6">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />

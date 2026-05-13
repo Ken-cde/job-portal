@@ -1,10 +1,14 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import api from '../services/api';
 import JobCard from '../components/JobCard';
 import JobDetailModal from '../components/JobDetailModal';
 import ApplyModal from '../components/ApplyModal';
 import { useAuth } from '../context/AuthContext';
+import { PageTransition } from '../components/MotionSystem';
+import GlassPanel from '../components/GlassPanel';
+import CinematicText from '../components/CinematicText';
+import { RippleButton } from '../components/MotionSystem';
 
 const Home = () => {
   const [jobs, setJobs] = useState([]);
@@ -18,7 +22,6 @@ const Home = () => {
 
   useEffect(() => {
     fetchJobs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -70,75 +73,106 @@ const Home = () => {
   };
 
   return (
-    <div className="animate-fade-in">
-      {/* Job Detail Modal */}
-      <JobDetailModal
-        job={selectedJob}
-        isOpen={showDetailModal}
-        onClose={() => setShowDetailModal(false)}
-        onApply={handleApply}
-        hasApplied={selectedJob ? appliedJobs.has(selectedJob.id) : false}
-      />
+    <PageTransition>
+      <div className="relative min-h-screen w-full px-6 py-12">
 
-      {/* Apply Modal */}
-      {selectedJob && (
-        <ApplyModal
-          job={selectedJob}
-          isOpen={showApplyModal}
-          onClose={() => setShowApplyModal(false)}
-          onSuccess={handleApplySuccess}
-        />
-      )}
+        {/* CINEMATIC HERO SECTION */}
+        <section className="relative h-[80vh] flex flex-col justify-center items-start mb-32">
+          {/* Massive Background Typography */}
+          <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full pointer-events-none overflow-hidden">
+            <CinematicText variant="h1" className="left-[-5%] whitespace-nowrap">
+              DISCOVER YOUR FUTURE
+            </CinematicText>
+          </div>
 
-      {/* Hero Section */}
-      <div className="glass-panel" style={{padding: '4rem 2rem', textAlign: 'center', marginBottom: '3rem', background: 'linear-gradient(180deg, rgba(124, 58, 237, 0.1) 0%, rgba(255,255,255,0.02) 100%)'}}>
-        <h1 style={{fontSize: '3rem', marginBottom: '1rem'}}>Find Your Dream <span style={{color: 'var(--primary)'}}>Job</span> Today</h1>
-        <p style={{color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto 2rem'}}>
-          Connect with top employers and discover opportunities that match your skills. Your next big career move starts here.
-        </p>
-
-        <div style={{maxWidth: '500px', margin: '0 auto', position: 'relative', display: 'flex', gap: '0.5rem'}}>
-          <input
-            type="text"
-            placeholder="Search by job title or keyword..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); fetchJobs(); } }}
-            style={{flex: 1, paddingLeft: '3rem', borderRadius: '2rem', height: '50px', fontSize: '1rem', background: 'var(--bg-secondary)'}}
-          />
-          <button
-            onClick={fetchJobs}
-            className="btn btn-primary"
-            style={{borderRadius: '2rem', padding: '0 1.5rem', height: '50px'}}
+          {/* Main Floating Panel */}
+          <GlassPanel
+            angle={-2}
+            className="relative z-10 p-12 max-w-3xl"
+            glow={true}
           >
-            Search
-          </button>
-        </div>
-      </div>
+            <CinematicText variant="h2" className="mb-4">
+              Find Your Dream Career
+            </CinematicText>
+            <p className="text-white/60 text-lg font-light mb-12 max-w-xl leading-relaxed">
+              Step into a new era of professional discovery. Connect with global innovators and redefine your career trajectory in a dreamlike digital landscape.
+            </p>
 
-      {/* Jobs Feed */}
-      <h2 style={{marginBottom: '1.5rem'}}>Latest Opportunities</h2>
-      {loading ? (
-        <div style={{textAlign: 'center', padding: '3rem', color: 'var(--text-muted)'}}>Loading jobs...</div>
-      ) : jobs.length === 0 ? (
-        <div className="glass-panel" style={{textAlign: 'center', padding: '3rem', color: 'var(--text-muted)'}}>
-          No jobs found matching your search.
-        </div>
-      ) : (
-        <div className="grid-container">
-          {jobs.map(job => (
-            <JobCard
-              key={job.id}
-              job={job}
-              userRole={user?.role}
-              onApply={handleApply}
-              onViewDetails={handleViewDetails}
-              hasApplied={appliedJobs.has(job.id)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+            <div className="relative flex gap-4 items-center group">
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-p3cyan/40">
+                  <Search size={20} />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Enter role, keyword, or skill..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); fetchJobs(); } }}
+                  className="w-full pl-12 pr-6 py-4 bg-white/5 border border-white/10 rounded-full text-white placeholder:text-white/30 focus:outline-none focus:border-p3cyan/50 transition-all duration-500"
+                />
+              </div>
+              <RippleButton onClick={fetchJobs} className="px-10">
+                Search
+              </RippleButton>
+            </div>
+          </GlassPanel>
+        </section>
+
+        {/* JOBS GRID SECTION */}
+        <section className="relative z-10">
+          <div className="flex justify-between items-end mb-12">
+            <div className="relative">
+               <CinematicText variant="label">Available Opportunities</CinematicText>
+               <CinematicText variant="h2" className="text-3xl">Latest Openings</CinematicText>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-24 glass-panel rounded-3xl">
+              <div className="w-12 h-12 border-4 border-p3cyan/20 border-t-p3cyan rounded-full animate-spin" />
+              <p className="cinematic-text text-xs mt-4 text-p3cyan/60">Synchronizing data...</p>
+            </div>
+          ) : jobs.length === 0 ? (
+            <div className="py-24 text-center glass-panel rounded-3xl border-dashed border-white/10">
+              <p className="cinematic-text text-white/40">No opportunities found in this sector.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {jobs.map(job => (
+                <JobCard
+                  key={job.id}
+                  job={job}
+                  userRole={user?.role}
+                  onApply={handleApply}
+                  onViewDetails={handleViewDetails}
+                  hasApplied={appliedJobs.has(job.id)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Job Detail Modal */}
+        <JobDetailModal
+          job={selectedJob}
+          isOpen={showDetailModal}
+          onClose={() => setShowDetailModal(false)}
+          onApply={handleApply}
+          hasApplied={selectedJob ? appliedJobs.has(selectedJob.id) : false}
+        />
+
+        {/* Apply Modal */}
+        {selectedJob && (
+          <ApplyModal
+            job={selectedJob}
+            isOpen={showApplyModal}
+            onClose={() => setShowApplyModal(false)}
+            onSuccess={handleApplySuccess}
+          />
+        )}
+      </div>
+    </PageTransition>
   );
 };
 

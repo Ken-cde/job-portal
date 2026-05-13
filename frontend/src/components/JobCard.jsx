@@ -1,5 +1,9 @@
 import { Briefcase, MapPin, Building2, Clock, Wifi, Home, Building, Eye } from 'lucide-react';
 import { getCurrencySymbol } from '../utils/currency';
+import { WateryCard } from '../components/MotionSystem';
+import GlassPanel from '../components/GlassPanel';
+import CinematicText from '../components/CinematicText';
+import { RippleButton } from '../components/MotionSystem';
 
 const getJobTypeIcon = (jobType) => {
   switch (jobType) {
@@ -10,84 +14,70 @@ const getJobTypeIcon = (jobType) => {
   }
 };
 
-const getJobTypeColor = (jobType) => {
-  switch (jobType) {
-    case 'REMOTE': return { bg: 'rgba(16, 185, 129, 0.15)', color: '#10b981' };
-    case 'HYBRID': return { bg: 'rgba(124, 58, 237, 0.15)', color: '#7c3aed' };
-    case 'ONSITE': return { bg: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6' };
-    default: return { bg: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' };
-  }
-};
-
 const JobCard = ({ job, onApply, onViewDetails, userRole, hasApplied }) => {
-  const jobTypeStyle = getJobTypeColor(job.jobType);
-
   return (
-    <div
-      className="glass-panel"
-      style={{
-        padding: '1.5rem',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem',
-        transition: 'transform 0.2s',
-        cursor: onViewDetails ? 'pointer' : 'default',
-      }}
-      onClick={() => onViewDetails && onViewDetails(job)}
-    >
-      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-        <div>
-          <h3 style={{marginBottom: '0.25rem', fontSize: '1.25rem'}}>{job.title}</h3>
-          <div style={{display: 'flex', gap: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem', flexWrap: 'wrap'}}>
-            <span style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}><Building2 size={16} /> {job.company}</span>
-            <span style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}><MapPin size={16} /> {job.location}</span>
-            <span style={{display: 'flex', alignItems: 'center', gap: '0.25rem'}}><Briefcase size={16} /> {getCurrencySymbol(job.currency)}{job.salary?.toLocaleString()}</span>
-          </div>
-        </div>
-        <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end'}}>
-          <div style={{background: 'rgba(124, 58, 237, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.75rem', borderRadius: '1rem', fontSize: '0.8rem', fontWeight: '600'}}>
-            Active
-          </div>
-          {job.jobType && (
-            <div style={{display: 'flex', alignItems: 'center', gap: '0.25rem', background: jobTypeStyle.bg, color: jobTypeStyle.color, padding: '0.2rem 0.6rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: '600'}}>
-              {getJobTypeIcon(job.jobType)} {job.jobType}
-            </div>
-          )}
-        </div>
-      </div>
+    <WateryCard angle={Math.random() * 2 - 1}>
+      <GlassPanel
+        className="p-6 flex flex-col gap-6 h-full group cursor-pointer"
+        glow={false}
+      >
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <CinematicText variant="h3" className="text-white group-hover:text-p3cyan transition-colors">
+              {job.title}
+            </CinematicText>
+            <div className="flex gap-4 text-white/40 text-xs mt-2 flex-wrap">
+              <span className="flex items-center gap-1"><Building2 size={12} /> {job.company}</span>
+              <span className="flex items-center gap-1"><MapPin size={12} /> {job.location}</span>
+              <span className="flex items-center gap-1 text-p3cyan/80 font-medium">
+                <Briefcase size={12} /> {getCurrencySymbol(job.currency)}{job.salary?.toLocaleString()}
+              </span>
+            </div_div>
+          </div_div>
 
-      <p style={{color: 'var(--text-main)', fontSize: '0.95rem', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden'}}>
-        {job.description}
-      </p>
+          <div className="flex flex-col gap-2 items-end">
+            <div className="px-3 py-1 rounded-full text-[10px] cinematic-text bg-p3cyan/10 text-p3cyan border border-p3cyan/20">
+              Active
+            </div_div>
+            {job.jobType && (
+              <div className="px-2 py-0.5 rounded-full text-[10px] cinematic-text bg-white/5 text-white/60 border border-white/10 flex items-center gap-1">
+                {getJobTypeIcon(job.jobType)} {job.jobType}
+              </div_div>
+            )}
+          </div_div>
+        </div_div>
 
-      <div style={{marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-        <div style={{display: 'flex', gap: '0.5rem'}}>
-          <span style={{color: 'var(--text-muted)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.25rem'}}>
-            <Clock size={14} /> Posted recently
-          </span>
-          {onViewDetails && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onViewDetails(job); }}
-              className="btn btn-secondary"
-              style={{padding: '0.35rem 0.75rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem'}}
+        <p className="text-white/50 font-light text-sm line-clamp-3 leading-relaxed">
+          {job.description}
+        </p>
+
+        <div className="mt-auto pt-4 border-t border-white/5 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <span className="text-white/30 text-[10px] cinematic-text flex items-center gap-1">
+              <Clock size={10} /> Recent
+            </span>
+            {onViewDetails && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onViewDetails(job); }}
+                className="text-xs cinematic-text text-white/60 hover:text-p3cyan transition-colors flex items-center gap-1"
+              >
+                <Eye size={12} /> Details
+              </button>
+            )}
+          </div_div>
+
+          {userRole === 'CANDIDATE' && (
+            <RippleButton
+              onClick={(e) => { e.stopPropagation(); onApply(job.id); }}
+              variant="primary"
+              className="py-1.5 px-4 text-xs"
             >
-              <Eye size={14} /> Details
-            </button>
+              {hasApplied ? 'Applied' : 'Apply'}
+            </RippleButton>
           )}
-        </div>
-
-        {userRole === 'CANDIDATE' && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onApply(job.id); }}
-            className="btn btn-primary"
-            style={{padding: '0.5rem 1rem'}}
-            disabled={hasApplied}
-          >
-            {hasApplied ? 'Applied' : 'Apply Now'}
-          </button>
-        )}
-      </div>
-    </div>
+        </div_div>
+      </GlassPanel>
+    </WateryCard>
   );
 };
 
