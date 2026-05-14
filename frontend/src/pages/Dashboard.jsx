@@ -7,6 +7,7 @@ import JobDetailModal from '../components/JobDetailModal';
 import PostJobModal from '../components/PostJobModal';
 import { Briefcase, Users, FileText, CheckCircle, Clock, XCircle, Eye, Pencil, Trash } from 'lucide-react';
 import { PageTransition, WateryCard, RippleButton, P3Slam } from '../components/MotionSystem';
+import { AnimatePresence } from 'framer-motion';
 import GlassPanel from '../components/GlassPanel';
 import CinematicText from '../components/CinematicText';
 
@@ -95,9 +96,11 @@ const Dashboard = () => {
           </P3Slam>
         </header>
 
-        {user.role === 'CANDIDATE' && <CandidateView data={data} />}
-        {user.role === 'EMPLOYER' && <EmployerView data={data} />}
-        {user.role === 'ADMIN' && <AdminView data={data} />}
+        <AnimatePresence mode="wait">
+          {user.role === 'CANDIDATE' && <CandidateView key="candidate" data={data} />}
+          {user.role === 'EMPLOYER' && <EmployerView key="employer" data={data} />}
+          {user.role === 'ADMIN' && <AdminView key="admin" data={data} />}
+        </AnimatePresence>
       </div>
     </PageTransition>
   );
@@ -111,6 +114,9 @@ const StatCard = ({ title, value, icon, color, onClick, active }) => (
         className={`p-6 flex items-center gap-6 transition-all duration-500 cursor-pointer group ${active ? 'glass-panel-bright border-p3cyan/50 shadow-[0_0_30px_rgba(120,232,255,0.2)] scale-105' : 'hover:bg-white/10'}`}
         onClick={onClick}
       >
+        {active && (
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-p3cyan shadow-[0_0_15px_rgba(120,232,255,0.8)]" />
+        )}
         <div className="p-4 rounded-xl bg-white/5 text-p3cyan border border-white/10 group-hover:scale-110 transition-transform">
           {icon}
         </div>
@@ -475,8 +481,9 @@ const EmployerView = ({ data }) => {
         <StatCard title="Total Applicants" value={data.totalApplicationsReceived} icon={<Users size={20}/>} color="59, 130, 246" onClick={() => handleCardClick('myapplicants')} active={activeTab === 'myapplicants'} />
       </div>
 
-      {activeTab === 'myjobs' && (
-        <P3Slam direction="left">
+      <AnimatePresence mode="wait">
+        {activeTab === 'myjobs' && (
+          <P3Slam key="myjobs" direction="left">
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <CinematicText variant="aggressive">Management Sector: Postings</CinematicText>
