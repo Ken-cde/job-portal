@@ -578,6 +578,7 @@ const EmployerView = ({ data }) => {
           </div>
         </P3Slam>
       )}
+    </AnimatePresence>
     </>
   );
 };
@@ -714,6 +715,8 @@ const AdminView = ({ data }) => {
         <StatCard title="Total Applications" value={data.totalApplications} icon={<FileText size={20}/>} color="16, 185, 129" onClick={() => handleCardClick('applications')} active={activeTab === 'applications'} />
       </div>
 
+      <AnimatePresence mode="wait">
+
       {activeTab === 'users' && (
         <P3Slam direction="left">
           <div className="space-y-6">
@@ -823,6 +826,7 @@ const AdminView = ({ data }) => {
           </div>
         </P3Slam>
       )}
+    </AnimatePresence>
     </>
   );
 };
