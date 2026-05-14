@@ -152,7 +152,7 @@ const CandidateView = ({ data }) => {
     if (loadingApps) return;
     setLoadingApps(true);
     try {
-      const res = await api.get(\`/applications/my?page=\${page}&size=\${APP_PAGE_SIZE}\`);
+      const res = await api.get(` /applications/my?page=${page}&size=${APP_PAGE_SIZE}`);
       setApplications(res.data.content || []);
       setAppTotalPages(res.data.totalPages || 0);
       setAppPage(page);
@@ -378,7 +378,7 @@ const EmployerView = ({ data }) => {
   const fetchMyApplications = async (page = 0) => {
     setLoadingList(true);
     try {
-      const res = await api.get(\`/applications/my-applicants?page=\${page}&size=\${APP_PAGE_SIZE}\`);
+      const res = await api.get(`/applications/my-applicants?page=${page}&size=${APP_PAGE_SIZE}`);
       setApplications(res.data.content || []);
       setAppTotalPages(res.data.totalPages || 0);
       setAppPage(page);
@@ -398,7 +398,7 @@ const EmployerView = ({ data }) => {
   const updateStatus = async (appId, action) => {
     setActionLoading(prev => ({ ...prev, [appId]: action }));
     try {
-      await api.put(\`/applications/\${appId}/\${action}\`);
+      await api.put(`/applications/${appId}/${action}`);
       fetchMyApplications();
     } catch (err) {
       toast.error('Failed to update application status');
@@ -414,7 +414,7 @@ const EmployerView = ({ data }) => {
   const removeApplication = async (appId) => {
     if (!window.confirm('Remove this application? This cannot be undone.')) return;
     try {
-      await api.delete(\`/applications/\${appId}\`);
+      await api.delete(`/applications/${appId}`);
       fetchMyApplications();
     } catch (err) {
       toast.error('Failed to remove application');
@@ -423,11 +423,11 @@ const EmployerView = ({ data }) => {
 
   const downloadResume = async (appId) => {
     try {
-      const res = await api.get(\`/applications/\${appId}/resume\`, { responseType: 'blob' });
+      const res = await api.get(`/applications/${appId}/resume`, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', \`resume_\${appId}\`);
+      link.setAttribute('download', `resume_${appId}`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -442,9 +442,9 @@ const EmployerView = ({ data }) => {
   };
 
   const handleDeleteJob = async (job) => {
-    if (!window.confirm(\`Delete "\${job.title}"? This cannot be undone.\`)) return;
+    if (!window.confirm(`Delete "${job.title}"? This cannot be undone.`)) return;
     try {
-      await api.delete(\`/jobs/\${job.id}\`);
+      await api.delete(`/jobs/${job.id}`);
       toast.success('Job deleted');
       fetchMyJobs();
     } catch (err) {
@@ -641,7 +641,7 @@ const AdminView = ({ data }) => {
   const promoteUser = async (userId) => {
     setActionLoading(userId);
     try {
-      await api.put(\`/admin/users/\${userId}/promote\`);
+      await api.put(`/admin/users/${userId}/promote`);
       fetchUsers();
     } catch (err) {
       toast.error('Failed to promote user');
@@ -653,7 +653,7 @@ const AdminView = ({ data }) => {
   const deleteAdminApplication = async (appId) => {
     if (!window.confirm('Remove this application?')) return;
     try {
-      await api.delete(\`/applications/\${appId}\`);
+      await api.delete(`/applications/${appId}`);
       fetchApplications();
     } catch (err) {
       toast.error('Failed to remove application');
@@ -663,7 +663,7 @@ const AdminView = ({ data }) => {
   const updateAdminAppStatus = async (appId, action) => {
     setAdminAppActionLoading(prev => ({ ...prev, [appId]: action }));
     try {
-      await api.put(\`/applications/\${appId}/\${action}\`);
+      await api.put(`/applications/${appId}/${action}`);
       fetchApplications();
     } catch (err) {
       toast.error('Failed to update application status');
@@ -678,11 +678,11 @@ const AdminView = ({ data }) => {
 
   const downloadAdminResume = async (appId) => {
     try {
-      const res = await api.get(\`/applications/\${appId}/resume\`, { responseType: 'blob' });
+      const res = await api.get(`/applications/${appId}/resume`, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', \`resume_\${appId}\`);
+      link.setAttribute('download', `resume_${appId}`);
       document.body.appendChild(link);
       link.click();
       link.remove();
