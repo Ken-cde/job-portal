@@ -97,3 +97,32 @@ export const PageTransition = ({ children }) => {
     </motion.div>
   );
 };
+
+/**
+ * P3Slam: A wrapper that "slams" content into place with a fast, overshoot spring.
+ * Useful for menu items and headers.
+ */
+export const P3Slam = ({ children, direction = 'right', delay = 0 }) => {
+  const variants = {
+    right: { x: 50, opacity: 0 },
+    left: { x: -50, opacity: 0 },
+    bottom: { y: 50, opacity: 0 },
+    top: { y: -50, opacity: 0 },
+  };
+
+  return (
+    <motion.div
+      initial={variants[direction]}
+      animate={{ x: 0, y: 0, opacity: 1 }}
+      transition={{
+        type: 'spring',
+        stiffness: 300,
+        damping: 20,
+        delay
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+

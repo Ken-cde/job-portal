@@ -142,7 +142,7 @@ const CandidateView = ({ data }) => {
   const fetchBrowseJobs = async () => {
     setLoadingJobs(true);
     try {
-      const endpoint = search ? `/jobs/search?keyword=${search}` : '/jobs';
+      const endpoint = search ? \`/jobs/search?keyword=\${search}\` : '/jobs';
       const res = await api.get(endpoint);
       setJobs(res.data.content || []);
     } catch (err) { console.error(err); } finally { setLoadingJobs(false); }
@@ -286,7 +286,7 @@ const CandidateView = ({ data }) => {
                })}
             </GlassPanel>
           </div>
-        </P3Slam>
+        </P3S a m>
 
         <P3Slam direction="right">
           <div className="space-y-6">
@@ -303,7 +303,7 @@ const CandidateView = ({ data }) => {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') fetchBrowseJobs(); }}
-                    className="w-full pl-4 pr-4 py-2 bg-white/5 border border-white/10 rounded-full text-white placeholder:text-white/30 text-sm focus:outline-none focus la-p3cyan/50 transition-all"
+                    className="w-full pl-4 pr-4 py-2 bg-white/5 border border-white/10 rounded-full text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-p3cyan/50 transition-all"
                   />
                 </div>
               </div>
@@ -510,7 +510,7 @@ const EmployerView = ({ data }) => {
       )}
 
       {activeTab === 'myapplicants' && (
-        <P3Slam direction="right">
+        <P3S l a m direction="right">
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <CinematicText variant="aggressive">Applicant Neural Feed</CinematicText>
@@ -550,7 +550,7 @@ const EmployerView = ({ data }) => {
                               <div className="text-[10px] text-white/40">{app.candidateEmail}</div>
                             </div>
                             <div className="flex items-center gap-3">
-                              <span className="px-2 py-0.5 rounded-full text la-p3cyan text-[10px] cinematic-text" style={{background: s.bg, color: s.color}}>{app.status}</span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] cinematic-text" style={{background: s.bg, color: s.color}}>{app.status}</span>
                               <div className="flex gap-1">
                                 {app.status === 'APPLIED' && <RippleButton onClick={() => updateStatus(app.id, 'review')} className="py-1 px-2 text-[10px]">Review</RippleButton>}
                                 {app.status === 'REVIEWED' && <RippleButton onClick={() => updateStatus(app.id, 'interview')} className="py-1 px-2 text-[10px]">Interview</RippleButton>}
