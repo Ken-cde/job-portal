@@ -271,7 +271,6 @@ const CandidateView = ({ data }) => {
              })}
             </GlassPanel>
           </div>
-        </div>
 
         <div className="space-y-6">
           <div className="flex justify-between items-center">
@@ -316,7 +315,6 @@ const CandidateView = ({ data }) => {
             </GlassPanel>
           </div>
         </div>
-      </div>
     </>
   );
 };
