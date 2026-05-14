@@ -303,7 +303,7 @@ const CandidateView = ({ data }) => {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') fetchBrowseJobs(); }}
-                    className="w-full pl-4 pr-4 py-2 bg-white/5 border border-white/10 rounded-full text-white placeholder:text-white/30 text-sm focus:outline-none focus la-p3cyan/50 transition-all"
+                    className="w-full pl-4 pr-4 py-2 bg-white/5 border border-white/10 rounded-full text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-p3cyan/50 transition-all"
                   />
                 </div>
               </div>
@@ -550,7 +550,7 @@ const EmployerView = ({ data }) => {
                               <div className="text-[10px] text-white/40">{app.candidateEmail}</div>
                             </div>
                             <div className="flex items-center gap-3">
-                              <span className="px-2 py-0.5 rounded-full text la-p3cyan text-[10px] cinematic-text" style={{background: s.bg, color: s.color}}>{app.status}</span>
+                              <span className="px-2 py-0.5 rounded-full text-p3cyan text-[10px] cinematic-text" style={{background: s.bg, color: s.color}}>{app.status}</span>
                               <div className="flex gap-1">
                                 {app.status === 'APPLIED' && <RippleButton onClick={() => updateStatus(app.id, 'review')} className="py-1 px-2 text-[10px]">Review</RippleButton>}
                                 {app.status === 'REVIEWED' && <RippleButton onClick={() => updateStatus(app.id, 'interview')} className="py-1 px-2 text-[10px]">Interview</RippleButton>}
@@ -713,9 +713,9 @@ const AdminView = ({ data }) => {
             <CinematicText variant="aggressive">System User Directory</CinematicText>
             <GlassPanel shape="shard" className="overflow-hidden">
               {loadingUsers ? <div className="py-12 text-center cinematic-text text-white/30">Loading users...</div> : (
-                <div className="divide-y divide-white/5">
+                <div className="space-y-2">
                   {users.map(user => (
-                    <div key={user.id} className="p-4 flex justify-between items-center group hover:bg-white/5 transition-colors">
+                    <div key={user.id} className="p-4 rounded-xl bg-white/5 border border-white/5 flex justify-between items-center group hover:bg-white/10 transition-all">
                       <div>
                         <div className="text-sm font-medium text-white">{user.username}</div>
                         <div className="text-xs text-white/40">{user.email}</div>
@@ -745,9 +745,9 @@ const AdminView = ({ data }) => {
             <CinematicText variant="aggressive">Global Job Index</CinematicText>
             <GlassPanel shape="shard" className="overflow-hidden">
               {loadingList ? <div className="py-12 text-center cinematic-text text-white/30">Loading jobs...</div> : (
-                <div className="divide-y divide-white/5">
+                <div className="space-y-2">
                   {jobs.map(job => (
-                    <div key={job.id} className="p-4 flex justify-between items-center group hover:bg-white/5 transition-colors">
+                    <div key={job.id} className="p-4 rounded-xl bg-white/5 border border-white/5 flex justify-between items-center group hover:bg-white/10 transition-all">
                       <div>
                         <div className="text-sm font-medium text-white group-hover:text-p3cyan transition-colors">{job.title}</div>
                         <div className="text-xs text-white/40">{job.company} · {job.location}</div>
