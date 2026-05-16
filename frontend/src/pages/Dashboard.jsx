@@ -65,7 +65,7 @@ const Dashboard = () => {
 
   return (
     <PageTransition>
-      <div className="relative min-h-screen w-full px-6 py-12 overflow-hidden">
+      <div className="relative min-h-screen w-full px-6 py-12 overflow-x-hidden overflow-hidden">
         {/* Atmospheric Accents */}
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden opacity-30">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-p3cyan/10 rounded-full blur-[100px]" />
@@ -75,11 +75,11 @@ const Dashboard = () => {
         </div>
 
         {/* Cinematic Header */}
-        <header className="relative mb-20 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+        <header className="relative mb-20 flex flex-col md:flex-row justify-between items-center md:items-end gap-6">
           <P3Slam direction="left">
             <div className="relative">
               <CinematicText variant="label">Welcome Back</CinematicText>
-              <h1 className="text-6xl font-black text-white tracking-tighter italic skew-x-[-5deg]">
+              <h1 className="text-3xl md:text-6xl font-black text-white tracking-tighter italic skew-x-[-2deg] md:skew-x-[-5deg]">
                 {user.username}<span className="text-p3cyan">.</span>
               </h1>
               <p className="text-white/40 cinematic-text text-xs mt-2 uppercase tracking-widest italic">
@@ -122,7 +122,7 @@ const StatCard = ({ title, value, icon, color, onClick, active }) => (
         </div>
         <div className="transition-transform group-hover:translate-x-1">
           <div className="text-white/40 cinematic-text text-[10px] uppercase tracking-tighter">{title}</div>
-          <div className="text-4xl font-black text-white italic tracking-tighter">{value}</div>
+          <div className="text-2xl md:text-4xl font-black text-white italic tracking-tighter">{value}</div>
         </div>
       </GlassPanel>
     </WateryCard>
@@ -275,7 +275,7 @@ const CandidateView = ({ data }) => {
               ))}
             </div>
 
-            <GlassPanel shape="shard" className="p-4 min-h-[400px] space-y-2">
+            <GlassPanel shape="shard" className="p-4 min-h-fit md:min-h-[400px] space-y-2">
               {loadingApps ? <div className="py-12 text-center cinematic-text text-white/30">Loading...</div> :
                filteredApplications.length === 0 ? <div className="py-12 text-center cinematic-text text-white/30">No records.</div> :
                filteredApplications.map((app, idx) => {
@@ -315,7 +315,7 @@ const CandidateView = ({ data }) => {
               </div>
               <RippleButton onClick={fetchBrowseJobs} className="text-xs px-6">Search</RippleButton>
             </div>
-            <GlassPanel shape="shard" className="p-4 min-h-[400px] space-y-3">
+            <GlassPanel shape="shard" className="p-4 min-h-fit md:min-h-[400px] space-y-3">
               {loadingJobs ? <div className="py-12 text-center cinematic-text text-white/30">Loading...</div> :
                jobs.length === 0 ? <div className="py-12 text-center cinematic-text text-white/30">No results.</div> :
                jobs.map(job => {
@@ -489,7 +489,7 @@ const EmployerView = ({ data }) => {
               <CinematicText variant="aggressive">Management Sector: Postings</CinematicText>
               <RippleButton onClick={() => setShowPostJobModal(true)} className="text-xs">+ Post New Job</RippleButton>
             </div>
-            <GlassPanel shape="shard" className="p-4 min-h-[400px] space-y-3">
+            <GlassPanel shape="shard" className="p-4 min-h-fit md:min-h-[400px] space-y-3">
               {loadingList ? (
                 <div className="py-12 text-center cinematic-text text-white/30">Loading...</div>
               ) : jobs.length === 0 ? (
