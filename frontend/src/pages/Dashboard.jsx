@@ -723,7 +723,7 @@ const AdminView = ({ data }) => {
             <CinematicText variant="aggressive">System User Directory</CinematicText>
             <GlassPanel shape="shard">
               {loadingUsers ? <div className="py-12 text-center cinematic-text text-white/30">Loading users...</div> : (
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                   {users.map(user => (
                     <div key={user.id} className="p-4 rounded-xl bg-white/5 border border-white/5 flex justify-between items-center group hover:bg-white/10 transition-all">
                       <div>
@@ -755,7 +755,7 @@ const AdminView = ({ data }) => {
             <CinematicText variant="aggressive">Global Job Index</CinematicText>
             <GlassPanel shape="shard">
               {loadingList ? <div className="py-12 text-center cinematic-text text-white/30">Loading jobs...</div> : (
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                   {jobs.map(job => (
                     <div key={job.id} className="p-4 rounded-xl bg-white/5 border border-white/5 flex justify-between items-center group hover:bg-white/10 transition-all">
                       <div>
