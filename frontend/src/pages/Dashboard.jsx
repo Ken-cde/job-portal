@@ -65,7 +65,7 @@ const Dashboard = () => {
 
   return (
     <PageTransition>
-      <div className="relative min-h-screen w-full px-6 py-12 overflow-x-hidden overflow-hidden">
+      <div className="relative min-h-screen w-full px-6 py-12 overflow-x-hidden">
         {/* Atmospheric Accents */}
         <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden opacity-30">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-p3cyan/10 rounded-full blur-[100px]" />
@@ -721,7 +721,7 @@ const AdminView = ({ data }) => {
         <P3Slam direction="left">
           <div className="space-y-6">
             <CinematicText variant="aggressive">System User Directory</CinematicText>
-            <GlassPanel shape="shard" className="overflow-hidden">
+            <GlassPanel shape="shard">
               {loadingUsers ? <div className="py-12 text-center cinematic-text text-white/30">Loading users...</div> : (
                 <div className="space-y-2">
                   {users.map(user => (
@@ -753,7 +753,7 @@ const AdminView = ({ data }) => {
         <P3Slam direction="right">
           <div className="space-y-6">
             <CinematicText variant="aggressive">Global Job Index</CinematicText>
-            <GlassPanel shape="shard" className="overflow-hidden">
+            <GlassPanel shape="shard">
               {loadingList ? <div className="py-12 text-center cinematic-text text-white/30">Loading jobs...</div> : (
                 <div className="space-y-2">
                   {jobs.map(job => (
