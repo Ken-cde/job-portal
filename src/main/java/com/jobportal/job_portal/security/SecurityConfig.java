@@ -84,7 +84,7 @@ public class SecurityConfig {
 
                         // Public APIs
                         .requestMatchers("/jobs/**").permitAll()
-                        .requestMatchers("/health").permitAll()
+                        .requestMatchers("/health", "/ping").permitAll()
 
                         // Dashboards
                         .requestMatchers("/dashboard/admin").hasRole("ADMIN")
