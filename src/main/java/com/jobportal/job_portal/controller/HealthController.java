@@ -10,4 +10,10 @@ public class HealthController {
     public String home() {
         return "Job Portal Backend is running 🚀";
     }
+
+    @GetMapping("/ping")
+    public String ping() {
+        return "pong";
+    }
+
 }
