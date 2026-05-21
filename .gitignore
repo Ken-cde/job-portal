@@ -33,9 +33,18 @@ build/
 .env
 .env.local
 .env.production
+uploads/
+dummy_resume.pdf
+ngrok.asc
 
 ### VS Code ###
 .vscode/
+
+### Frontend ###
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist/
 
 ### Claude Code ###
 .claude/
