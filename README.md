@@ -1,232 +1,181 @@
-# Job Portal Web Application
+# 💼 Job Portal Platform
 
-A full-stack job portal connecting candidates with employers. Features JWT authentication, role-based access, job applications, and email notifications.
+A modern, full-stack job board application designed to connect talent with opportunity. The platform provides tailored experiences for Candidates, Employers, and Administrators, featuring a secure JWT-based authentication system and real-time email notifications.
 
-## 🌟 Features
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Spring Boot](https://img.shields.io/badge/Backend-Spring%20Boot%203.2-green)
+![React](https://img.shields.io/badge/Frontend-React%2019-blue)
+![MySQL](https://img.shields.io/badge/Database-MySQL/PostgreSQL-orange)
 
-### Candidate
-- Register & Login with JWT authentication
-- Browse and search jobs
-- Apply to jobs with resume upload
-- Track application status (Pending → Reviewed → Interviewing → Accepted/Rejected)
-- View job details with requirements
+---
 
-### Employer
-- Post new jobs with title, description, requirements, salary
-- Select job type: Remote, Hybrid, or Onsite
-- View all applications received
-- Accept/Reject/Review candidates
-- Download candidate resumes
+## 🚀 Features
 
-### Admin
-- Platform-wide dashboard with analytics
-- View all users and manage roles
-- Monitor all jobs and applications
+### 👤 Candidate Experience
+- **Job Discovery**: Advanced search with keyword filtering and sorting by salary/date.
+- **Seamless Application**: One-click apply with resume upload functionality.
+- **Application Tracking**: Personalized dashboard to monitor application statuses (Applied $\rightarrow$ Reviewed $\rightarrow$ Interviewing $\rightarrow$ Accepted/Rejected).
+- **Profile Management**: Update personal details and manage account security.
+
+### 🏢 Employer Tools
+- **Job Management**: Create, edit, and delete comprehensive job postings.
+- **Applicant Pipeline**: Manage candidates through a structured review process.
+- **Resume Viewer**: Direct access to candidate resumes for efficient screening.
+- **Employer Dashboard**: High-level overview of total jobs posted and applications received.
+
+### 🛡️ Administration Suite
+- **User Governance**: Full control over user accounts, including deletion and role management.
+- **Role Promotion**: Ability to promote candidates to employers.
+- **System Insights**: Global dashboard tracking total users, jobs, and applications across the platform.
+
+---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| **Backend** | Java 21, Spring Boot 3.2.2, Spring Security |
-| **Database** | MySQL, Spring Data JPA, Hibernate |
-| **Auth** | JWT (jjwt 0.11.5) |
-| **API Docs** | SpringDoc OpenAPI 2.3.0 |
-| **Frontend** | React 19, Vite, React Router DOM 7 |
-| **HTTP Client** | Axios |
-| **Icons** | Lucide React |
-| **Email** | Spring Mail (SMTP) |
+### Backend
+- **Language**: Java 17
+- **Framework**: Spring Boot 3.2.2
+- **Security**: Spring Security with JWT (JSON Web Tokens) for stateless authentication.
+- **Data**: Spring Data JPA with MySQL/PostgreSQL support.
+- **Communication**: Spring Mail for automated notifications.
+- **Documentation**: OpenAPI/Swagger for interactive API testing.
 
-## 🚀 Quick Start
-
-### Prerequisites
-- Java 21
-- Node.js 18+
-- MySQL 8.0+
-- Maven 3.8+
-
-### Database Setup
-```sql
-CREATE DATABASE job_portal;
-```
-
-### Backend Setup
-
-1. **Configure MySQL credentials** in `src/main/resources/application.properties`:
-```properties
-spring.datasource.username=your_mysql_username
-spring.datasource.password=your_mysql_password
-```
-
-2. **Run the backend:**
-```bash
-cd job-portal
-mvn spring-boot:run
-```
-
-Backend runs at: `http://localhost:8085`
-Swagger API docs: `http://localhost:8085/swagger-ui/index.html`
-
-### Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend runs at: `http://localhost:5173`
-
-### Test Credentials
-
-| Role | Email | Password |
-|------|-------|----------|
-| **Admin** | admin@jobportal.com | admin123 |
-| **Employer** | tech_corp@test.com | password123 |
-| **Candidate** | Register new account | — |
+### Frontend
+- **Framework**: React 19 (Vite)
+- **Styling**: Tailwind CSS for a responsive, modern UI.
+- **Animations**: Framer Motion for smooth transitions.
+- **Icons**: Lucide React for a consistent visual language.
+- **State/Routing**: React Router Dom v7 and Axios for API orchestration.
 
 ---
 
-## 📧 Email Setup (Optional)
+## 📐 Architecture
 
-The project supports email notifications via SMTP. Emails are sent for:
-- Welcome email on registration
-- Application confirmation
-- Application status updates
-
-### Mailtrap (Recommended for Development)
-
-1. Sign up free at [https://mailtrap.io](https://mailtrap.io)
-2. Go to **Inboxes → Demo Inbox**
-3. Copy your credentials
-
-Update `application.properties`:
-```properties
-spring.mail.username=your_mailtrap_username
-spring.mail.password=your_mailtrap_password
+### System Design
+```mermaid
+graph TD
+    Client[React Frontend - Vercel] <-->|REST API / JWT| Server[Spring Boot Backend - ngrok/VPS]
+    Server <-->|JPA/Hibernate| DB[(MySQL/PostgreSQL)]
+    Server -->|SMTP| Email[Email Service]
+    
+    subgraph Security Layer
+        JWT[JWT Validation]
+        RBAC[Role Based Access Control]
+    end
+    Server --- Security Layer
 ```
 
-### Gmail SMTP
-
-1. Enable 2-Factor Authentication on your Gmail
-2. Generate an **App Password** at [Google App Passwords](https://myaccount.google.com/apppasswords)
-3. Use these settings:
-```properties
-spring.mail.host=smtp.gmail.com
-spring.mail.port=587
-spring.mail.username=your_email@gmail.com
-spring.mail.password=your_app_password
+### User Role Workflow
+```mermaid
+graph LR
+    C[Candidate] -->|Search/Apply| J[Job Posting]
+    J -->|Notification| E[Employer]
+    E -->|Review/Interview| C
+    E -->|Accept/Reject| C
+    A[Admin] -->|Manage| C
+    A -->|Manage| E
 ```
 
 ---
 
-## 🌐 Live Deployment
+## 📑 API Specifications
 
-### Free Hosting Options
+### Base URL: `/api` (or root)
 
-| Component | Service | Cost |
-|-----------|---------|------|
-| Backend (JAR) | Railway, Render, Fly.io | Free tier |
-| Frontend | Vercel, Netlify | Free tier |
-| Database | Railway MySQL, PlanetScale | Free tier |
+#### 🔐 Authentication (`/auth`)
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/register` | Public | Create a new account (Defaults to Candidate) |
+| `POST` | `/login` | Public | Authenticate and receive JWT token |
+| `POST` | `/forgot-password` | Public | Request a password reset link via email |
+| `POST` | `/reset-password` | Public | Update password using a valid reset token |
 
-### Recommended Deployment
+#### 👤 User Management (`/users`)
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/me` | Authenticated | Fetch current user profile |
+| `PUT` | `/me` | Authenticated | Update current user profile |
+| `DELETE` | `/{email}` | Admin | Remove a user from the system |
 
-1. **Frontend** → Deploy to [Vercel](https://vercel.com) (connect GitHub repo)
-2. **Backend** → Deploy to [Railway](https://railway.app) or [Render](https://render.com)
-3. **Database** → Use Railway's MySQL addon or PlanetScale
+#### 💼 Job Board (`/jobs`)
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/` | Employer/Admin | Post a new job opening |
+| `GET` | `/` | Public | List all available jobs (Paginated) |
+| `GET` | `/my` | Employer | View jobs posted by the authenticated user |
+| `PUT` | `/{id}` | Owner/Admin | Edit job details |
+| `DELETE` | `/{id}` | Owner/Admin | Remove a job posting |
+| `GET` | `/search` | Public | Search jobs by keyword with custom sorting |
 
-### Environment Variables for Production
+#### 📄 Application Process (`/applications`)
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/{jobId}` | Candidate | Apply for a job with resume upload |
+| `GET` | `/my` | Candidate | View a list of personal applications |
+| `GET` | `/my-applicants` | Employer | View applications for all owned jobs |
+| `GET` | `/job/{jobId}` | Owner/Admin | View all applicants for a specific job |
+| `PUT` | `/{id}/review` | Owner/Admin | Mark application as Reviewed |
+| `PUT` | `/{id}/interview` | Owner/Admin | Mark application as Interviewing |
+| `PUT` | `/{id}/accept` | Owner/Admin | Mark application as Accepted |
+| `PUT` | `/{id}/reject` | Owner/Admin | Mark application as Rejected |
+| `GET` | `/{id}/resume` | Owner/Admin | Download candidate's resume file |
+| `DELETE` | `/{id}` | Candidate/Owner/Admin | Remove an application |
 
-```bash
-# Backend (.env)
-PORT=8085
-spring.datasource.url=jdbc:mysql://your_production_mysql_url/job_portal
-spring.datasource.username=your_db_user
-spring.datasource.password=your_db_password
-jwt.secret=your_super_secure_jwt_secret_key_at_least_256_bits
-spring.mail.username=your_smtp_username
-spring.mail.password=your_smtp_password
-```
-
----
-
-## 📁 Project Structure
-
-```
-job-portal/
-├── src/main/java/com/jobportal/job_portal/
-│   ├── config/          # CORS, Swagger, Data Seeder
-│   ├── controller/     # REST endpoints
-│   ├── dto/           # Data transfer objects
-│   ├── exception/     # Global error handling
-│   ├── model/         # JPA entities
-│   ├── repository/    # Data repositories
-│   ├── security/      # JWT auth & config
-│   └── service/       # Business logic
-├── src/main/resources/
-│   └── application.properties
-├── frontend/
-│   ├── src/
-│   │   ├── components/   # Reusable UI components
-│   │   ├── pages/        # Page components
-│   │   ├── context/      # Auth context
-│   │   └── services/      # API service
-│   └── package.json
-└── pom.xml
-```
+#### 📊 Dashboards (`/dashboard`)
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/candidate` | Candidate | Stats: Applied, Accepted, Rejected, Pending |
+| `GET` | `/employer` | Employer | Stats: Total Jobs Posted, Total Applications |
+| `GET` | `/admin` | Admin | Stats: Total Users, Total Jobs, Total Applications |
 
 ---
 
-## 📝 API Endpoints
+## ⚙️ Installation & Setup
 
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login
+### Backend Configuration
+1. **Database**: Create a MySQL/PostgreSQL database.
+2. **Environment**: Update `src/main/resources/application.properties`:
+   ```properties
+   spring.datasource.url=jdbc:mysql://localhost:3306/job_portal
+   spring.datasource.username=your_username
+   spring.datasource.password=your_password
+   # Email Configuration
+   spring.mail.host=smtp.gmail.com
+   spring.mail.port=587
+   spring.mail.username=your-email@gmail.com
+   spring.mail.password=your-app-password
+   ```
+3. **Run**:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
 
-### Jobs
-- `GET /api/jobs` - List all jobs (paginated)
-- `GET /api/jobs/search` - Search jobs
-- `POST /api/jobs` - Create job (Employer/Admin)
-- `PUT /api/jobs/{id}` - Update job
-- `DELETE /api/jobs/{id}` - Delete job
-
-### Applications
-- `POST /api/applications/{jobId}` - Apply to job (with resume)
-- `GET /api/applications/my` - My applications (Candidate)
-- `GET /api/applications/my-applicants` - My applicants (Employer)
-
-### Dashboards
-- `GET /api/dashboard/candidate` - Candidate dashboard
-- `GET /api/dashboard/employer` - Employer dashboard
-- `GET /api/dashboard/admin` - Admin dashboard
-
----
-
-## 💼 For Recruiters
-
-To run this project locally:
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/yourusername/job-portal.git
-cd job-portal
-
-# 2. Setup MySQL database
-mysql -u root -p -e "CREATE DATABASE job_portal;"
-
-# 3. Start backend
-mvn spring-boot:run
-
-# 4. Start frontend (new terminal)
-cd frontend
-npm install
-npm run dev
-```
-
-Visit `http://localhost:5173` to access the application.
+### Frontend Configuration
+1. **Install Dependencies**:
+   ```bash
+   cd frontend
+   npm install
+   ```
+2. **API URL**: Update the axios base URL to match your backend (e.g., `http://localhost:8080` or your ngrok URL).
+3. **Run**:
+   ```bash
+   npm run dev
+   ```
 
 ---
 
-## 📄 License
+## 🌐 Deployment
 
-This project is open source and available for educational and portfolio use.
+- **Frontend**: Deployed on **Vercel**.
+- **Backend**: Exposed via **ngrok** (for development) or hosted on a VPS.
+- **CI/CD**: GitHub Actions recommended for automated testing and deployment.
+
+---
+
+## 🤝 Contributing
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
