@@ -26,8 +26,12 @@ const Login = () => {
       toast.success('Welcome back!');
       navigate('/dashboard');
     } catch (err) {
-      const msg = err.response?.data?.message || err.response?.data || 'Login failed. Please check your credentials.';
-      setError(typeof msg === 'string' ? msg : 'Login failed. Please check your credentials.');
+      if (!err.response) {
+        setError('Unable to connect to the server. Please check your internet connection.');
+      } else {
+        const msg = err.response?.data?.message || err.response?.data || 'Invalid credentials. Please try again.';
+        setError(typeof msg === 'string' ? msg : 'Invalid credentials. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }

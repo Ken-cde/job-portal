@@ -275,7 +275,7 @@ const CandidateView = ({ data }) => {
               ))}
             </div>
 
-            <GlassPanel shape="shard" className="p-4 min-h-fit md:min-h-[400px] space-y-2">
+            <GlassPanel className="p-4 min-h-fit md:min-h-[400px] space-y-2">
               {loadingApps ? <div className="py-12 text-center cinematic-text text-white/30">Loading...</div> :
                filteredApplications.length === 0 ? <div className="py-12 text-center cinematic-text text-white/30">No records.</div> :
                filteredApplications.map((app, idx) => {
@@ -315,7 +315,7 @@ const CandidateView = ({ data }) => {
               </div>
               <RippleButton onClick={fetchBrowseJobs} className="text-xs px-6">Search</RippleButton>
             </div>
-            <GlassPanel shape="shard" className="p-4 min-h-fit md:min-h-[400px] space-y-3">
+            <GlassPanel className="p-4 min-h-fit md:min-h-[400px] space-y-3">
               {loadingJobs ? <div className="py-12 text-center cinematic-text text-white/30">Loading...</div> :
                jobs.length === 0 ? <div className="py-12 text-center cinematic-text text-white/30">No results.</div> :
                jobs.map(job => {
@@ -489,7 +489,7 @@ const EmployerView = ({ data }) => {
               <CinematicText variant="aggressive">Management Sector: Postings</CinematicText>
               <RippleButton onClick={() => setShowPostJobModal(true)} className="text-xs">+ Post New Job</RippleButton>
             </div>
-            <GlassPanel shape="shard" className="p-4 min-h-fit md:min-h-[400px] space-y-3">
+            <GlassPanel className="p-4 min-h-fit md:min-h-[400px] space-y-3">
               {loadingList ? (
                 <div className="py-12 text-center cinematic-text text-white/30">Loading...</div>
               ) : jobs.length === 0 ? (
@@ -533,7 +533,7 @@ const EmployerView = ({ data }) => {
                 ))}
               </div>
             </div>
-            <GlassPanel shape="shard" className="p-6 space-y-8">
+            <GlassPanel className="p-6 space-y-8">
               {loadingList ? (
                 <div className="py-12 text-center cinematic-text text-white/30">Loading...</div>
               ) : filteredByJob.length === 0 ? (
@@ -721,7 +721,7 @@ const AdminView = ({ data }) => {
         <P3Slam direction="left">
           <div className="space-y-6">
             <CinematicText variant="aggressive">System User Directory</CinematicText>
-            <GlassPanel shape="shard">
+            <GlassPanel>
               {loadingUsers ? <div className="py-12 text-center cinematic-text text-white/30">Loading users...</div> : (
                 <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                   {users.map(user => (
@@ -753,7 +753,7 @@ const AdminView = ({ data }) => {
         <P3Slam direction="right">
           <div className="space-y-6">
             <CinematicText variant="aggressive">Global Job Index</CinematicText>
-            <GlassPanel shape="shard">
+            <GlassPanel>
               {loadingList ? <div className="py-12 text-center cinematic-text text-white/30">Loading jobs...</div> : (
                 <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
                   {jobs.map(job => (
@@ -785,7 +785,7 @@ const AdminView = ({ data }) => {
                 ))}
               </div>
             </div>
-            <GlassPanel shape="shard" className="p-6 space-y-8">
+            <GlassPanel className="p-6 space-y-8">
               {loadingList ? <div className="py-12 text-center cinematic-text text-white/30">Loading...</div> :
                adminFilteredByJob.length === 0 ? <div className="py-12 text-center cinematic-text text-white/30">No records.</div> :
                adminFilteredByJob.map(group => (
