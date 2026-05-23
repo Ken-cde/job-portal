@@ -9,10 +9,11 @@ import com.jobportal.job_portal.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
+import org.springframework.context.annotation.Profile;
 import java.util.List;
 
 @Component
+@Profile("dev")
 public class DataSeeder implements CommandLineRunner {
 
     private final RoleRepository roleRepository;
