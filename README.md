@@ -34,7 +34,7 @@ A modern, full-stack, enterprise-grade job board application designed to connect
 ### System Design Flow
 ```mermaid
 graph TD
-    Client[React Frontend - Vercel] <-->|REST API / Stateless JWT| Server[Spring Boot Backend - ngrok/VPS]
+    Client[React Frontend - Vercel] <-->|REST API / Stateless JWT| Server[Spring Boot Backend - Cloud Host]
     Server <-->|JPA / Hibernate ORM| DB[(MySQL/PostgreSQL)]
     Server -->|SMTP Service| Email[Spring Mail Dispatcher]
     
@@ -226,5 +226,5 @@ npm run dev
 ## 🌐 Production Deployment
 
 - **Client Presentation**: Hosted on **Vercel** with optimized production builds.
-- **Backend API Server**: Exposed via **ngrok** tunnel (during local developer testing) or hosted securely on an **AWS EC2 / VPS** instance.
+- **Backend API Server**: Hosted securely on **Render** or an **AWS EC2 / VPS** instance.
 - **Database Storage**: Managed relational MySQL database instance.

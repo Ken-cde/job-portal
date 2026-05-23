@@ -35,8 +35,6 @@ build/
 .env.production
 uploads/
 dummy_resume.pdf
-ngrok.asc
-
 ### VS Code ###
 .vscode/
 

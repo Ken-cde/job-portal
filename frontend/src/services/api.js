@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Empty string = relative URLs. Vercel rewrites /auth/*, /users/*, /jobs/* etc. to ngrok backend.
+// Empty string = relative URLs. Vercel rewrites /auth/*, /users/*, /jobs/* etc. to the production backend.
 // Dev: set VITE_API_URL=http://localhost:8085 in .env for local development.
 const API_URL = import.meta.env.VITE_API_URL || '';
 

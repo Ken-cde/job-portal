@@ -16,4 +16,9 @@ public class HealthController {
         return "pong";
     }
 
+    @GetMapping("/health")
+    public String health() {
+        return "OK";
+    }
+
 }
