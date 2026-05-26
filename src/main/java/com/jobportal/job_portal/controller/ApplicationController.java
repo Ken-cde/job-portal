@@ -66,8 +66,15 @@ public class ApplicationController {
         String uploadDir = "uploads/resumes/";
         Files.createDirectories(Paths.get(uploadDir));
 
-        String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        Path path = Paths.get(uploadDir + filename);
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Filename is missing");
+        }
+
+        // Sanitize and generate unique name
+        String sanitizedName = Paths.get(originalFilename).getFileName().toString();
+        String uniqueFilename = java.util.UUID.randomUUID() + "_" + sanitizedName;
+        Path path = Paths.get(uploadDir).resolve(uniqueFilename).normalize();
 
         Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
 
@@ -76,7 +83,6 @@ public class ApplicationController {
         app.setUser(user);
         app.setJob(job);
         app.setResumePath(path.toString());
-        app.setResumePath(file.getOriginalFilename());
 
         applicationRepository.save(app);
 
@@ -338,7 +344,12 @@ public class ApplicationController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        Path path = Paths.get(app.getResumePath());
+        Path baseDir = Paths.get("uploads/resumes/").toAbsolutePath().normalize();
+        Path path = Paths.get(app.getResumePath()).toAbsolutePath().normalize();
+
+        if (!path.startsWith(baseDir)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid resume path");
+        }
 
         Resource resource = new UrlResource(path.toUri());
 
