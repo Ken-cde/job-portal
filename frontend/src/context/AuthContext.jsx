@@ -9,6 +9,14 @@ export const AuthProvider = ({ children }) => {
 
   // Check auth on mount
   useEffect(() => {
+    const warmUp = async () => {
+      try {
+        await api.get('/health');
+      } catch (err) {
+        console.log('Warm-up failed or server is already awake');
+      }
+    };
+
     const fetchUser = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -25,16 +33,27 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     };
+
+    warmUp();
     fetchUser();
   }, []);
 
-  const login = async (email, password) => {
-    const res = await api.post('/auth/login', { email, password });
-    localStorage.setItem('token', res.data.token);
-    // Fetch profile
-    const profileRes = await api.get('/users/me');
-    setUser(profileRes.data);
-    return profileRes.data;
+  const login = async (email, password, retries = 1) => {
+    try {
+      const res = await api.post('/auth/login', { email, password });
+      localStorage.setItem('token', res.data.token);
+      // Fetch profile
+      const profileRes = await api.get('/users/me');
+      setUser(profileRes.data);
+      return profileRes.data;
+    } catch (err) {
+      // Retry if it's a network error or a 5xx server error (common during cold starts)
+      if (retries > 0 && (!err.response || (err.response.status >= 500 && err.response.status <= 599))) {
+        console.log(`Login attempt failed, retrying... (${retries} attempts left)`);
+        return login(email, password, retries - 1);
+      }
+      throw err;
+    }
   };
 
   const register = async (username, email, password) => {
