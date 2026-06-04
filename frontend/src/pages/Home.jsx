@@ -163,7 +163,7 @@ const Home = () => {
         />
 
         {/* Apply Modal */}
-        {selected laS-job && (
+        {selectedJob && (
           <ApplyModal
             job={selectedJob}
             isOpen={showApplyModal}
@@ -171,7 +171,7 @@ const Home = () => {
             onSuccess={handleApplySuccess}
           />
         )}
-      </div>
+      </div
     </PageTransition>
   );
 };
