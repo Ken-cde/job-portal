@@ -74,13 +74,13 @@ const Home = () => {
 
   return (
     <PageTransition>
-      <div className="relative min-h-screen w-full px-6 py-12">
+      <div className="relative min-h-screen w-full px-4 md:px-6 py-6 md:py-12">
 
         {/* CINEMATIC HERO SECTION */}
-        <section className="relative h-[80vh] flex flex-col justify-center items-start mb-32">
+        <section className="relative min-h-[60vh] md:h-[80vh] flex flex-col justify-center items-start mb-20 md:mb-32">
           {/* Massive Background Typography */}
           <div className="absolute top-1/2 left-0 -translate-y-1/2 w-full pointer-events-none overflow-hidden">
-            <CinematicText variant="h1" className="left-[-5%] whitespace-nowrap">
+            <CinematicText variant="h1" className="left-[-5%] whitespace-nowrap text-4xl md:text-8xl">
               DISCOVER YOUR FUTURE
             </CinematicText>
           </div>
@@ -88,18 +88,18 @@ const Home = () => {
           {/* Main Floating Panel */}
           <GlassPanel
             angle={-2}
-            className="relative z-10 p-12 max-w-3xl"
+            className="relative z-10 p-6 md:p-12 max-w-3xl w-full"
             glow={true}
           >
-            <CinematicText variant="h2" className="mb-4">
+            <CinematicText variant="h2" className="mb-4 text-2xl md:text-4xl">
               Find Your Dream Career
             </CinematicText>
-            <p className="text-white/60 text-lg font-light mb-12 max-w-xl leading-relaxed">
+            <p className="text-white/60 text-sm md:text-lg font-light mb-8 md:mb-12 max-w-xl leading-relaxed">
               Step into a new era of professional discovery. Connect with global innovators and redefine your career trajectory in a dreamlike digital landscape.
             </p>
 
-            <div className="relative flex gap-4 items-center group">
-              <div className="relative flex-1">
+            <div className="relative flex flex-col md:flex-row gap-4 items-center group">
+              <div className="relative w-full">
                 <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-p3cyan/40">
                   <Search size={20} />
                 </div>
@@ -112,7 +112,7 @@ const Home = () => {
                   className="w-full pl-12 pr-6 py-4 bg-white/5 border border-white/10 rounded-full text-white placeholder:text-white/30 focus:outline-none focus:border-p3cyan/50 transition-all duration-500"
                 />
               </div>
-              <RippleButton onClick={fetchJobs} className="px-10">
+              <RippleButton onClick={fetchJobs} className="w-full md:w-auto px-10">
                 Search
               </RippleButton>
             </div>
@@ -121,10 +121,10 @@ const Home = () => {
 
         {/* JOBS GRID SECTION */}
         <section className="relative z-10">
-          <div className="flex justify-between items-end mb-12">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-12 gap-4">
             <div className="relative">
                <CinematicText variant="label">Available Opportunities</CinematicText>
-               <CinematicText variant="h2" className="text-3xl">Latest Openings</CinematicText>
+               <CinematicText variant="h2" className="text-2xl md:text-3xl">Latest Openings</CinematicText>
             </div>
           </div>
 
@@ -138,7 +138,7 @@ const Home = () => {
               <p className="cinematic-text text-white/40">No opportunities found in this sector.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {jobs.map(job => (
                 <JobCard
                   key={job.id}
@@ -163,7 +163,7 @@ const Home = () => {
         />
 
         {/* Apply Modal */}
-        {selectedJob && (
+        {selected laS-job && (
           <ApplyModal
             job={selectedJob}
             isOpen={showApplyModal}

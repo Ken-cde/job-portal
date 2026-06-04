@@ -7,7 +7,7 @@ import CinematicText from '../components/CinematicText';
 import { RippleButton } from '../components/MotionSystem';
 
 const Register = () => {
-  const [formData, setFormData] = useState({username: '', email: '', password: ''});
+  const [formData, setFormData] = useState({username: '', email: '', password: '', role: 'CANDIDATE'});
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -41,7 +41,7 @@ const Register = () => {
       <div className="flex min-h-[80vh] items-center justify-center p-6">
         <GlassPanel
           angle={-1}
-          className="w-full max-w-md p-12 glow"
+          className="w-full max-w-md p-8 md:p-12 glow"
         >
           <div className="text-center mb-12">
             <CinematicText variant="h3" className="text-white text-2xl mb-2">New Identity</CinematicText>
@@ -61,6 +61,25 @@ const Register = () => {
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <div className="space-y-3">
+              <label className="text-white/60 cinematic-text text-[10px] uppercase ml-1">Account Type</label>
+              <div className="flex p-1 bg-white/5 border border-white/10 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, role: 'CANDIDATE'})}
+                  className={`flex-1 py-2 text-[10px] uppercase tracking-wider transition-all rounded-lg ${formData.role === 'CANDIDATE' ? 'bg-p3cyan text-black font-bold shadow-lg' : 'text-white/40 hover:text-white'}`}
+                >
+                  Candidate
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, role: 'EMPLOYER'})}
+                  className={`flex-1 py-2 text-[10px] uppercase tracking-wider transition-all rounded-lg ${formData.role === 'EMPLOYER' ? 'bg-p3cyan text-black font-bold shadow-lg' : 'text-white/40 hover:text-white'}`}
+                >
+                  Employer
+                </button>
+              </div>
+            </div>
             <div className="space-y-2">
               <label className="text-white/60 cinematic-text text-[10px] uppercase ml-1">Username</label>
               <input

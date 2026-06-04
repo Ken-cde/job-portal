@@ -15,23 +15,25 @@ import ResetPassword from './pages/ResetPassword';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
-  
+
   return (
-    <nav className="glass-panel" style={{padding: '1rem', marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'center', position: 'relative', zIndex: 100}}>
-      <Link to="/" style={{fontWeight: 'bold', fontSize: '1.2rem'}}>🚀 JobPortal</Link>
-      <Link to="/dashboard">Dashboard</Link>
-      
-      <div style={{marginLeft: 'auto', display: 'flex', gap: '1rem', alignItems: 'center'}}>
+    <nav className="glass-panel flex items-center justify-between px-4 py-4 mb-8 relative z-[100] gap-4 overflow-x-auto whitespace-nowrap">
+      <div className="flex items-center gap-6">
+        <Link to="/" style={{fontWeight: 'bold', fontSize: '1.2rem'}} className="shrink-0">🚀 JobPortal</Link>
+        <Link to="/dashboard" className="text-sm text-white/80 hover:text-white transition-colors">Dashboard</Link>
+      </div>
+
+      <div className="flex items-center gap-3 md:gap-6 shrink-0">
         {user ? (
           <>
-            <Link to="/profile" style={{color: 'var(--text-muted)'}}>Profile</Link>
-            <span style={{color: 'var(--text-muted)'}}>Hi, {user.username} ({user.role})</span>
-            <button onClick={logout} className="btn btn-secondary" style={{padding: '0.5rem 1rem'}}>Logout</button>
+            <Link to="/profile" style={{color: 'var(--text-muted)'}} className="text-xs">Profile</Link>
+            <span style={{color: 'var(--text-muted)', fontSize: '12px'}}>Hi, {user.username} ({user.role})</span>
+            <button onClick={logout} className="btn btn-secondary text-xs px-3 py-1">Logout</button>
           </>
         ) : (
           <>
-            <Link to="/login" className="btn btn-secondary">Login</Link>
-            <Link to="/register" className="btn btn-primary">Sign Up</Link>
+            <Link to="/login" className="btn btn-secondary text-xs px-3 py-1">Login</Link>
+            <Link to="/register" className="btn btn-primary text-xs px-3 py-1">Sign Up</Link>
           </>
         )}
       </div>
@@ -41,11 +43,11 @@ const Navbar = () => {
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
-  
-  if (loading) return <div>Loading...</div>;
+
+  if (loading) return <div className="flex items-center justify-center min-h-screen text-white">Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
   if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
-  
+
   return children;
 };
 
@@ -58,7 +60,7 @@ function App() {
           <div className="relative min-h-screen w-full">
             <AtmosphericBackground />
             <Navbar />
-            <main className="relative z-10 pt-24 px-6">
+            <main className="relative z-10 pt-12 md:pt-24 px-4 md:px-6">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
