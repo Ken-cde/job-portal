@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { PageTransition } from '../components/MotionSystem';
@@ -7,13 +7,18 @@ import CinematicText from '../components/CinematicText';
 import { RippleButton } from '../components/MotionSystem';
 
 const Register = () => {
-  const [formData, setFormData] = useState({username: '', email: '', password: '', role: 'CANDIDATE'});
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    role: 'CANDIDATE'
+  });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
   const handleChange = (e) => {
-    setFormData({...formData, [e.target.name]: e.target.value});
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -66,20 +71,21 @@ const Register = () => {
               <div className="flex p-1 bg-white/5 border border-white/10 rounded-xl">
                 <button
                   type="button"
-                  onClick={() => setFormData({...formData, role: 'CANDIDATE'})}
+                  onClick={() => setFormData({ ...formData, role: 'CANDIDATE' })}
                   className={`flex-1 py-2 text-[10px] uppercase tracking-wider transition-all rounded-lg ${formData.role === 'CANDIDATE' ? 'bg-p3cyan text-black font-bold shadow-lg' : 'text-white/40 hover:text-white'}`}
                 >
                   Candidate
                 </button>
                 <button
                   type="button"
-                  onClick={() => setFormData({...formData, role: 'EMPLOYER'})}
+                  onClick={() => setFormData({ ...formData, role: 'EMPLOYER' })}
                   className={`flex-1 py-2 text-[10px] uppercase tracking-wider transition-all rounded-lg ${formData.role === 'EMPLOYER' ? 'bg-p3cyan text-black font-bold shadow-lg' : 'text-white/40 hover:text-white'}`}
                 >
                   Employer
                 </button>
               </div>
             </div>
+
             <div className="space-y-2">
               <label className="text-white/60 cinematic-text text-[10px] uppercase ml-1">Username</label>
               <input

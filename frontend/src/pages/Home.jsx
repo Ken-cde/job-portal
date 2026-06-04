@@ -171,7 +171,7 @@ const Home = () => {
             onSuccess={handleApplySuccess}
           />
         )}
-      </div
+      </div>
     </PageTransition>
   );
 };
