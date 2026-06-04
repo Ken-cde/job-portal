@@ -31,7 +31,7 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        String adminEmail = "smtp423@gmail.com";
+        String adminEmail = "smtp4523@gmail.com";
 
         // Check if admin already exists to avoid wiping production data
         Optional<User> existingAdmin = userRepository.findByEmail(adminEmail);
