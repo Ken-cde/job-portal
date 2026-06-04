@@ -352,8 +352,10 @@ public class ApplicationController {
         }
 
         Resource resource = new UrlResource(path.toUri());
+        String contentType = Files.probeContentType(path);
 
         return ResponseEntity.ok()
+                .contentType(contentType != null ? contentType : "application/octet-stream")
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"" + path.getFileName() + "\"")
                 .body(resource);

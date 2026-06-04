@@ -129,6 +129,13 @@ const StatCard = ({ title, value, icon, color, onClick, active }) => (
   </P3Slam>
 );
 
+const getFilenameFromHeaders = (headers) => {
+  const disposition = headers['content-disposition'];
+  if (!disposition) return null;
+  const match = disposition.match(/filename="?([^";]+)"?/);
+  return match ? match[1] : null;
+};
+
 const CandidateView = ({ data }) => {
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -430,10 +437,11 @@ const EmployerView = ({ data }) => {
   const downloadResume = async (appId) => {
     try {
       const res = await api.get(`/applications/${appId}/resume`, { responseType: 'blob' });
+      const filename = getFilenameFromHeaders(res.headers) || `resume_${appId}`;
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `resume_${appId}`);
+      link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -687,10 +695,11 @@ const AdminView = ({ data }) => {
   const downloadAdminResume = async (appId) => {
     try {
       const res = await api.get(`/applications/${appId}/resume`, { responseType: 'blob' });
+      const filename = getFilenameFromHeaders(res.headers) || `resume_${appId}`;
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `resume_${appId}`);
+      link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
       link.remove();
