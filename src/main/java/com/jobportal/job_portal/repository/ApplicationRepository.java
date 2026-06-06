@@ -23,6 +23,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     long countByUserAndStatus(User user, ApplicationStatus status);
 
-    long countByJobUser(User user);
+    long countByJob_User(User user);
 
 }
