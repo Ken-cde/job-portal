@@ -56,10 +56,11 @@ const ApplyModal = ({ job, isOpen, onClose, onSuccess }) => {
         setFile(null);
       }, 1500);
     } catch (err) {
+      console.error('Detailed Error:', err);
       const message = err.response?.data;
       const errorText = typeof message === 'string'
         ? message
-        : (message?.message || 'Failed to submit application');
+        : (message?.message || err.message || 'Failed to submit application');
       setError(errorText);
     } finally {
       setUploading(false);
