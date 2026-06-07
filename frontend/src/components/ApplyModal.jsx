@@ -63,16 +63,15 @@ const ApplyModal = ({ job, isOpen, onClose, onSuccess }) => {
         const data = err.response.data;
         if (typeof data === 'string') {
           errorText = data;
-        } else if (typeof data === 'object' && data.message) {
-          errorText = data.message;
         } else if (typeof data === 'object') {
-          errorText = JSON.stringify(data);
+          errorText = data.message || data.error || JSON.stringify(data);
         }
       } else if (err.message) {
         errorText = err.message;
       }
 
-      setError(errorText);
+      // Final safety check: Ensure errorText is a string and not an object
+      setError(typeof errorText === 'string' ? errorText : String(errorText));
     } finally {
       setUploading(false);
     }

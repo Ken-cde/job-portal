@@ -56,18 +56,25 @@ public class ApplicationController {
             @PathVariable Long jobId,
             @RequestParam("resume") MultipartFile file,
             Authentication authentication) {
+        System.out.println("Applying for job: " + jobId + " by user: " + (authentication != null ? authentication.getName() : "ANONYMOUS"));
         try {
+            if (authentication == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+            }
+
             User user = userRepository.findByEmail(authentication.getName())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new RuntimeException("User not found in database"));
 
             Job job = jobRepository.findById(jobId)
                     .orElseThrow(() -> new RuntimeException("Job not found"));
 
             if (applicationRepository.findByUserAndJob(user, job).isPresent()) {
+                System.out.println("User already applied for this job");
                 return ResponseEntity.badRequest().body("Already applied");
             }
 
             // ===== SAVE FILE TO SUPABASE =====
+            System.out.println("Uploading file to Supabase: " + file.getOriginalFilename());
             String fileName = supabaseStorageService.uploadFile(file);
 
             // ===== SAVE APPLICATION =====
@@ -77,6 +84,7 @@ public class ApplicationController {
             app.setResumePath(fileName);
 
             applicationRepository.save(app);
+            System.out.println("Application saved successfully. Path: " + fileName);
 
             // Send email notification to candidate
             try {
@@ -103,6 +111,8 @@ public class ApplicationController {
 
             return ResponseEntity.ok("Applied successfully");
         } catch (Exception e) {
+            System.err.println("CRITICAL ERROR in applyJob: " + e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException(e.getMessage() != null ? e.getMessage() : "Error processing application");
         }
     }
