@@ -57,10 +57,21 @@ const ApplyModal = ({ job, isOpen, onClose, onSuccess }) => {
       }, 1500);
     } catch (err) {
       console.error('Detailed Error:', err);
-      const message = err.response?.data;
-      const errorText = typeof message === 'string'
-        ? message
-        : (message?.message || err.message || 'Failed to submit application');
+      let errorText = 'Failed to submit application';
+
+      if (err.response && err.response.data) {
+        const data = err.response.data;
+        if (typeof data === 'string') {
+          errorText = data;
+        } else if (typeof data === 'object' && data.message) {
+          errorText = data.message;
+        } else if (typeof data === 'object') {
+          errorText = JSON.stringify(data);
+        }
+      } else if (err.message) {
+        errorText = err.message;
+      }
+
       setError(errorText);
     } finally {
       setUploading(false);

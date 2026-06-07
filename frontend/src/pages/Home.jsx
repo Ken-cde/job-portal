@@ -45,8 +45,13 @@ const Home = () => {
   const fetchMyApplications = async () => {
     try {
       const res = await api.get('/applications/my');
-      const appliedJobIds = res.data.map(app => app.jobId).filter(Boolean);
-      setAppliedJobs(new Set(appliedJobIds));
+      if (res.data && Array.isArray(res.data)) {
+        const appliedJobIds = res.data.map(app => app.jobId).filter(Boolean);
+        setAppliedJobs(new Set(appliedJobIds));
+      } else {
+        console.warn('Expected array of applications but received:', res.data);
+        setAppliedJobs(new Set());
+      }
     } catch (err) {
       console.error('Failed to fetch my applications', err);
     }
