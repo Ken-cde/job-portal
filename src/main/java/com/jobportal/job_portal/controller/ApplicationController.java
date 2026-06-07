@@ -5,8 +5,9 @@ import com.jobportal.job_portal.dto.ApplicationResponseDTO;
 import com.jobportal.job_portal.model.*;
 import com.jobportal.job_portal.repository.*;
 import com.jobportal.job_portal.service.EmailService;
+import com.jobportal.job_portal.service.SupabaseStorageService;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -35,15 +36,18 @@ public class ApplicationController {
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final SupabaseStorageService supabaseStorageService;
 
     public ApplicationController(ApplicationRepository applicationRepository,
                                  JobRepository jobRepository,
                                  UserRepository userRepository,
-                                 EmailService emailService) {
+                                 EmailService emailService,
+                                 SupabaseStorageService supabaseStorageService) {
         this.applicationRepository = applicationRepository;
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
+        this.supabaseStorageService = supabaseStorageService;
     }
 
     // APPLY JOB
@@ -63,27 +67,14 @@ public class ApplicationController {
             return ResponseEntity.badRequest().body("Already applied");
         }
 
-        // ===== SAVE FILE =====
-        String uploadDir = "uploads/resumes/";
-        Files.createDirectories(Paths.get(uploadDir));
-
-        String originalFilename = file.getOriginalFilename();
-        if (originalFilename == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Filename is missing");
-        }
-
-        // Sanitize and generate unique name
-        String sanitizedName = Paths.get(originalFilename).getFileName().toString();
-        String uniqueFilename = java.util.UUID.randomUUID() + "_" + sanitizedName;
-        Path path = Paths.get(uploadDir).resolve(uniqueFilename).normalize();
-
-        Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+        // ===== SAVE FILE TO SUPABASE =====
+        String fileName = supabaseStorageService.uploadFile(file);
 
         // ===== SAVE APPLICATION =====
         Application app = new Application();
         app.setUser(user);
         app.setJob(job);
-        app.setResumePath(path.toString());
+        app.setResumePath(fileName);
 
         applicationRepository.save(app);
 
@@ -345,20 +336,23 @@ public class ApplicationController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        Path baseDir = Paths.get("uploads/resumes/").toAbsolutePath().normalize();
-        Path path = Paths.get(app.getResumePath()).toAbsolutePath().normalize();
+        Resource resource = supabaseStorageService.downloadFile(app.getResumePath());
+        String fileName = app.getResumePath();
 
-        if (!path.startsWith(baseDir)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid resume path");
+        // Try to determine content type from filename extension
+        String contentType = "application/octet-stream";
+        if (fileName.toLowerCase().endsWith(".pdf")) {
+            contentType = "application/pdf";
+        } else if (fileName.toLowerCase().endsWith(".doc")) {
+            contentType = "application/msword";
+        } else if (fileName.toLowerCase().endsWith(".docx")) {
+            contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
         }
 
-        Resource resource = new UrlResource(path.toUri());
-        String contentType = Files.probeContentType(path);
-
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType != null ? contentType : "application/octet-stream"))
+                .contentType(MediaType.parseMediaType(contentType))
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + path.getFileName() + "\"")
+                        "attachment; filename=\"" + fileName + "\"")
                 .body(resource);
     }
 
