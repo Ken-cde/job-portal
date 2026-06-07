@@ -55,45 +55,56 @@ public class ApplicationController {
     public ResponseEntity<?> applyJob(
             @PathVariable Long jobId,
             @RequestParam("resume") MultipartFile file,
-            Authentication authentication) throws Exception {
+            Authentication authentication) {
+        try {
+            User user = userRepository.findByEmail(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-        User user = userRepository.findByEmail(authentication.getName())
-                .orElseThrow();
+            Job job = jobRepository.findById(jobId)
+                    .orElseThrow(() -> new RuntimeException("Job not found"));
 
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow();
+            if (applicationRepository.findByUserAndJob(user, job).isPresent()) {
+                return ResponseEntity.badRequest().body("Already applied");
+            }
 
-        if (applicationRepository.findByUserAndJob(user, job).isPresent()) {
-            return ResponseEntity.badRequest().body("Already applied");
+            // ===== SAVE FILE TO SUPABASE =====
+            String fileName = supabaseStorageService.uploadFile(file);
+
+            // ===== SAVE APPLICATION =====
+            Application app = new Application();
+            app.setUser(user);
+            app.setJob(job);
+            app.setResumePath(fileName);
+
+            applicationRepository.save(app);
+
+            // Send email notification to candidate
+            try {
+                emailService.sendApplicationReceived(
+                    user.getEmail(),
+                    job.getTitle(),
+                    job.getCompany()
+                );
+            } catch (Exception e) {
+                System.err.println("Email failed: " + e.getMessage());
+            }
+
+            // Send email notification to employer
+            try {
+                emailService.sendNewApplicantEmail(
+                    job.getUser().getEmail(),
+                    job.getTitle(),
+                    user.getUsername(),
+                    user.getEmail()
+                );
+            } catch (Exception e) {
+                System.err.println("Email failed: " + e.getMessage());
+            }
+
+            return ResponseEntity.ok("Applied successfully");
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage() != null ? e.getMessage() : "Error processing application");
         }
-
-        // ===== SAVE FILE TO SUPABASE =====
-        String fileName = supabaseStorageService.uploadFile(file);
-
-        // ===== SAVE APPLICATION =====
-        Application app = new Application();
-        app.setUser(user);
-        app.setJob(job);
-        app.setResumePath(fileName);
-
-        applicationRepository.save(app);
-
-        // Send email notification to candidate
-        emailService.sendApplicationReceived(
-            user.getEmail(),
-            job.getTitle(),
-            job.getCompany()
-        );
-
-        // Send email notification to employer
-        emailService.sendNewApplicantEmail(
-            job.getUser().getEmail(),
-            job.getTitle(),
-            user.getUsername(),
-            user.getEmail()
-        );
-
-        return ResponseEntity.ok("Applied successfully");
     }
 
     // ================== CANDIDATE VIEW ==================
