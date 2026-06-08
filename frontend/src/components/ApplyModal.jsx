@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Upload, FileText, CheckCircle } from 'lucide-react';
 import api from '../services/api';
+import { safeError } from '../utils\errorUtils';
 
 const ApplyModal = ({ job, isOpen, onClose, onSuccess }) => {
   const [file, setFile] = useState(null);
@@ -57,21 +58,7 @@ const ApplyModal = ({ job, isOpen, onClose, onSuccess }) => {
       }, 1500);
     } catch (err) {
       console.error('Detailed Error:', err);
-      let errorText = 'Failed to submit application';
-
-      if (err.response && err.response.data) {
-        const data = err.response.data;
-        if (typeof data === 'string') {
-          errorText = data;
-        } else if (typeof data === 'object') {
-          errorText = data.message || data.error || JSON.stringify(data);
-        }
-      } else if (err.message) {
-        errorText = err.message;
-      }
-
-      // Final safety check: Ensure errorText is a string and not an object
-      setError(typeof errorText === 'string' ? errorText : String(errorText));
+      setError(safeError(err));
     } finally {
       setUploading(false);
     }

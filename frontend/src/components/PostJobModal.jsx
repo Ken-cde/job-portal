@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Briefcase, CheckCircle, Edit } from 'lucide-react';
 import api from '../services/api';
 import { COMMON_CURRENCIES } from '../utils/currency';
+import { safeError } from '../utils/errorUtils';
 
 const EMPTY_FORM = {
   title: '',
@@ -71,7 +72,7 @@ const PostJobModal = ({ isOpen, onClose, onSuccess, job, isEdit = false }) => {
         setFormData(EMPTY_FORM);
       }, 1500);
     } catch (err) {
-      setError(err.response?.data?.message || `Failed to ${isEdit ? 'update' : 'post'} job`);
+      setError(safeError(err));
     } finally {
       setUploading(false);
     }

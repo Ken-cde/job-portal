@@ -5,6 +5,7 @@ import { PageTransition } from '../components/MotionSystem';
 import GlassPanel from '../components/GlassPanel';
 import CinematicText from '../components/CinematicText';
 import { RippleButton } from '../components/MotionSystem';
+import { safeError } from '../utils/errorUtils';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -30,12 +31,7 @@ const Register = () => {
       await api.post('/auth/register', formData);
       setSuccessMsg('Identity Created. Please confirm your signal via email.');
     } catch (err) {
-      if (err.response?.data && typeof err.response.data === 'object' && !err.response.data.message) {
-        const validationErrs = Object.values(err.response.data).join(', ');
-        setError(validationErrs || 'Registration failed.');
-      } else {
-        setError(err.response?.data?.message || 'Registration failed. Please try again.');
-      }
+      setError(safeError(err));
     } finally {
       setIsLoading(false);
     }

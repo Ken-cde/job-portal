@@ -6,6 +6,7 @@ import { PageTransition } from '../components/MotionSystem';
 import GlassPanel from '../components/GlassPanel';
 import CinematicText from '../components/CinematicText';
 import { RippleButton } from '../components/MotionSystem';
+import { safeError } from '../utils/errorUtils';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -29,8 +30,7 @@ const Login = () => {
       if (!err.response) {
         setError('Unable to connect to the server. Please check your internet connection.');
       } else {
-        const msg = err.response?.data?.message || err.response?.data || 'Invalid credentials. Please try again.';
-        setError(typeof msg === 'string' ? msg : 'Invalid credentials. Please try again.');
+        setError(safeError(err));
       }
     } finally {
       setIsLoading(false);

@@ -10,6 +10,7 @@ import { PageTransition, WateryCard, RippleButton, P3Slam } from '../components/
 import { AnimatePresence } from 'framer-motion';
 import GlassPanel from '../components/GlassPanel';
 import CinematicText from '../components/CinematicText';
+import { safeError } from '../utils/errorUtils';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -40,7 +41,7 @@ const Dashboard = () => {
       setData(res.data);
     } catch (err) {
       console.error('Failed to fetch dashboard data', err);
-      setError(err.response?.data?.message || err.message || 'Unknown error');
+      setError(safeError(err));
     } finally {
       setLoading(false);
     }
