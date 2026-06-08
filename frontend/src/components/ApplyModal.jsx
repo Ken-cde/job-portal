@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, Upload, FileText, CheckCircle } from 'lucide-react';
 import api from '../services/api';
-import { safeError } from '../utils\errorUtils';
+import { safeError } from '../utils/errorUtils';
 
 const ApplyModal = ({ job, isOpen, onClose, onSuccess }) => {
   const [file, setFile] = useState(null);
