@@ -35,7 +35,8 @@ public class SupabaseStorageService {
             throw new IOException("Filename is missing");
         }
 
-        String sanitizedName = Paths.get(originalFilename).getFileName().toString();
+        String sanitizedName = Paths.get(originalFilename).getFileName().toString()
+                .replaceAll("[^a-zA-Z0-9.\\-_]", "_");
         String fileName = UUID.randomUUID() + "_" + sanitizedName;
         String uploadUrl = UriComponentsBuilder.fromHttpUrl(projectUrl)
                 .pathSegment("storage", "v1", "object", BUCKET, fileName)
