@@ -113,7 +113,8 @@ public class ApplicationController {
         } catch (Exception e) {
             System.err.println("CRITICAL ERROR in applyJob: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException(e.getMessage() != null ? e.getMessage() : "Error processing application");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body(e.getMessage() != null ? e.getMessage() : "Error processing application");
         }
     }
 
