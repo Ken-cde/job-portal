@@ -31,7 +31,7 @@ const AiInterviewGuideResult = ({ guide, onClose }) => {
           <div className="p-6 rounded-2xl bg-p3cyan/10 border border-p3cyan/20 space-y-3">
             <div className="flex items-center gap-2 text-p3cyan cinematic-text text-xs uppercase tracking-widest">
               <Target size={14} /> Strategic Evaluation Focus
-            </div}
+            </div>
             <p className="text-white/80 text-sm leading-relaxed italic">
               {guide.evaluationFocus}
             </p>

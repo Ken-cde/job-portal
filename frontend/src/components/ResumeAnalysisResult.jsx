@@ -30,13 +30,13 @@ const ResumeAnalysisResult = ({ analysis, onClose }) => {
                   stroke="#00f2ff" strokeWidth="8"
                   fill="transparent"
                   strokeDasharray={377}
-                  strokeDashoffset={377 - (377 * (analysis.score / 100))}
+                  strokeDashoffset={377 - (377 * ((analysis.score || 0) / 100))}
                   strokeLinecap="round"
                   className="transition-all duration-1000 ease-out"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-4xl font-black text-white italic tracking-tighter">{Math.round(analysis.score)}%</span>
+                <span className="text-4xl font-black text-white italic tracking-tighter">{Math.round(analysis.score || 0)}%</span>
               </div>
             </div>
             <p className="mt-4 cinematic-text text-xs text-white/60 uppercase tracking-widest">Profile Compatibility Score</p>
@@ -76,7 +76,7 @@ const ResumeAnalysisResult = ({ analysis, onClose }) => {
           <div className="space-y-4 pt-6 border-t border-white/10">
             <div className="flex items-center gap-2 text-p3cyan cinematic-text text-xs uppercase tracking-widest">
               <Lightbulb size={14} /> Strategic Improvements
-            </div>
+            </div}
             <div className="space-y-3">
               {(analysis.suggestions || []).map((s, i) => (
                 <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/10 text-white/70 text-sm leading-relaxed group hover:bg-white/10 transition-all">
