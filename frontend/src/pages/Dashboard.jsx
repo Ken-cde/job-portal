@@ -208,7 +208,7 @@ const CandidateView = ({ data }) => {
       const optimizeResume = async (appId) => {
         setIsAnalyzing(true);
         try {
-          const res = await api.get(`/applications/optimize?applicationId=${appId}`);
+          const res = await api.get(`/applications/analyze-fit?applicationId=${appId}`);
           setAnalysisResult(res.data);
         } catch (err) {
           toast.error('AI analysis failed: ' + safeError(err));
