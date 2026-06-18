@@ -2,10 +2,13 @@ package com.jobportal.job_portal.controller;
 
 import com.jobportal.job_portal.dto.CandidateApplicationDTO;
 import com.jobportal.job_portal.dto.ApplicationResponseDTO;
+import com.jobportal.job_portal.dto.AiAnalysisResponse;
 import com.jobportal.job_portal.model.*;
 import com.jobportal.job_portal.repository.*;
 import com.jobportal.job_portal.service.EmailService;
 import com.jobportal.job_portal.service.SupabaseStorageService;
+import com.jobportal.job_portal.service.AiService;
+import com.jobportal.job_portal.service.ResumeExtractionService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
@@ -26,7 +29,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
-import org.springframework.data.domain.PageImpl;
 
 @RestController
 @RequestMapping("/applications")
@@ -37,17 +39,23 @@ public class ApplicationController {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final SupabaseStorageService supabaseStorageService;
+    private final AiService aiService;
+    private final ResumeExtractionService resumeExtractionService;
 
     public ApplicationController(ApplicationRepository applicationRepository,
-                                 JobRepository jobRepository,
-                                 UserRepository userRepository,
-                                 EmailService emailService,
-                                 SupabaseStorageService supabaseStorageService) {
+                                JobRepository jobRepository,
+                                UserRepository userRepository,
+                                EmailService emailService,
+                                SupabaseStorageService supabaseStorageService,
+                                AiService aiService,
+                                ResumeExtractionService resumeExtractionService) {
         this.applicationRepository = applicationRepository;
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.supabaseStorageService = supabaseStorageService;
+        this.aiService = aiService;
+        this.resumeExtractionService = resumeExtractionService;
     }
 
     // APPLY JOB
@@ -139,6 +147,39 @@ public class ApplicationController {
                 ));
     }
 
+    @PostMapping("/optimize")
+    public ResponseEntity<?> optimizeResume(@RequestParam Long applicationId, Authentication auth) {
+        try {
+            Application app = applicationRepository.findById(applicationId)
+                    .orElseThrow(() -> new RuntimeException("Application not found"));
+
+            User user = userRepository.findByEmail(auth.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (!app.getUser().getId().equals(user.getId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only optimize your own resume");
+            }
+
+            // 1. Download resume from Supabase
+            Resource resumeResource = supabaseStorageService.downloadFile(app.getResumePath());
+
+            // 2. Extract text using Tika
+            String resumeText = resumeExtractionService.extractText(resumeResource);
+
+            // 3. Get job details
+            Job job = app.getJob();
+
+            // 4. Analyze with AI
+            AiAnalysisResponse analysis = aiService.analyzeResume(resumeText, job.getTitle(), job.getRequirements());
+
+            return ResponseEntity.ok(analysis);
+        } catch (Exception e) {
+            System.err.println("Error during resume optimization: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("AI Optimization failed: " + e.getMessage());
+        }
+    }
+
     // ================= EMPLOYER / ADMIN VIEW =================
 
     @GetMapping("/my-applicants")
@@ -199,7 +240,69 @@ public class ApplicationController {
                 .toList();
     }
 
-    // ================= GET ALL (ADMIN) =================
+    @GetMapping("/{id}/interview-guide")
+    public ResponseEntity<AiInterviewGuideResponse> getInterviewGuide(@PathVariable Long id, Authentication auth) {
+        try {
+            Application app = applicationRepository.findById(id).orElseThrow();
+            User user = userRepository.findByEmail(auth.getName()).orElseThrow();
+
+            if (!app.getJob().getUser().getId().equals(user.getId()) && !user.getRole().getName().equals("ADMIN")) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
+
+            Resource resumeResource = supabaseStorageService.downloadFile(app.getResumePath());
+            String resumeText = resumeExtractionService.extractText(resumeResource);
+
+            Job job = app.getJob();
+            AiInterviewGuideResponse guide = aiService.generateInterviewGuide(
+                app.getUser().getUsername(),
+                resumeText,
+                job.getTitle(),
+                job.getRequirements()
+            );
+
+            return ResponseEntity.ok(guide);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/job/{jobId}/screen")
+    public ResponseEntity<List<AiScreeningResponse>> screenApplicants(
+            @PathVariable Long jobId,
+            Authentication auth) {
+        try {
+            User user = userRepository.findByEmail(auth.getName()).orElseThrow();
+            Job job = jobRepository.findById(jobId).orElseThrow();
+
+            if (!job.getUser().getId().equals(user.getId()) && !user.getRole().getName().equals("ADMIN")) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
+
+            List<Application> apps = applicationRepository.findByJob(job);
+            List<AiScreeningResponse> screenings = new java.util.ArrayList<>();
+
+            for (Application app : apps) {
+                Resource resumeResource = supabaseStorageService.downloadFile(app.getResumePath());
+                String resumeText = resumeExtractionService.extractText(resumeResource);
+
+                AiScreeningResponse screening = aiService.screenApplicant(
+                    app.getUser().getUsername(),
+                    resumeText,
+                    job.getTitle(),
+                    job.getRequirements(),
+                    app.getId()
+                );
+                screenings.add(screening);
+            }
+
+            screenings.sort((a, b) -> b.getScore().compareTo(a.getScore()));
+            return ResponseEntity.ok(screenings);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Collections.emptyList());
+        }
+    }
 
     @GetMapping
     public List<ApplicationResponseDTO> getAllApplications(Authentication auth) {
@@ -377,5 +480,4 @@ public class ApplicationController {
                         "attachment; filename=\"" + fileName + "\"")
                 .body(resource);
     }
-
 }

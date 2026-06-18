@@ -15,6 +15,9 @@ public class Job {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(columnDefinition = "vector(1536)")
+    private float[] embedding;
+
     private String title;
     private String description;
     private String company;

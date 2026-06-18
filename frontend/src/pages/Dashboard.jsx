@@ -5,7 +5,10 @@ import api from '../services/api';
 import ApplyModal from '../components/ApplyModal';
 import JobDetailModal from '../components/JobDetailModal';
 import PostJobModal from '../components/PostJobModal';
-import { Briefcase, Users, FileText, CheckCircle, Clock, XCircle, Eye, Pencil, Trash } from 'lucide-react';
+import ResumeAnalysisResult from '../components/ResumeAnalysisResult';
+import AiScreeningResult from '../components/AiScreeningResult';
+import AiInterviewGuideResult from '../components/AiInterviewGuideResult';
+import { Briefcase, Users, FileText, CheckCircle, Clock, XCircle, Eye, Pencil, Trash, Sparkles } from 'lucide-react';
 import { PageTransition, WateryCard, RippleButton, P3Slam } from '../components/MotionSystem';
 import { AnimatePresence } from 'framer-motion';
 import GlassPanel from '../components/GlassPanel';
@@ -151,7 +154,10 @@ const CandidateView = ({ data }) => {
   const [popupStatus, setPopupStatus] = useState(null);
   const [appPage, setAppPage] = useState(0);
   const [appTotalPages, setAppTotalPages] = useState(0);
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const APP_PAGE_SIZE = 5;
+  const toast = useToast();
 
   const fetchBrowseJobs = async () => {
     setLoadingJobs(true);
@@ -199,6 +205,18 @@ const CandidateView = ({ data }) => {
     fetchMyApplications(0);
   };
 
+  const optimizeResume = async (appId) => {
+    setIsAnalyzing(true);
+    try {
+      const res = await api.post(`/applications/optimize?applicationId=${appId}`);
+      setAnalysisResult(res.data);
+    } catch (err) {
+      toast.error('AI analysis failed: ' + safeError(err));
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'ACCEPTED': return { bg: 'rgba(16, 185, 129, 0.2)', color: '#10b981' };
@@ -224,6 +242,7 @@ const CandidateView = ({ data }) => {
     <>
       {selectedJob && <ApplyModal job={selectedJob} isOpen={showApplyModal} onClose={() => { setShowApplyModal(false); setSelectedJob(null); }} onSuccess={handleApplySuccess} />}
       <JobDetailModal job={selectedJob} isOpen={showDetailModal} onClose={() => setShowDetailModal(false)} onApply={handleApplyFromModal} hasApplied={selectedJob ? appliedJobs.has(selectedJob.id) : false} />
+      <ResumeAnalysisResult analysis={analysisResult} onClose={() => setAnalysisResult(null)} />
 
       {popupStatus && (
         <div className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6" onClick={() => setPopupStatus(null)}>
@@ -290,11 +309,20 @@ const CandidateView = ({ data }) => {
                  const s = getStatusColor(app.status);
                  return (
                    <div key={idx} className="p-3 rounded-lg bg-white/5 border border-white/5 flex justify-between items-center group hover:bg-white/10 transition-all">
-                     <div>
+                     <div className="flex-1 min-w-0 pr-4">
                        <div className="text-sm font-medium text-white group-hover:text-p3cyan transition-colors">{app.jobTitle}</div>
                        <div className="text-xs text-white/40">{app.company}</div>
                      </div>
-                     <span className="px-2 py-0.5 rounded-full text-[10px] cinematic-text" style={{background: s.bg, color: s.color}}>{app.status}</span>
+                     <div className="flex items-center gap-3">
+                       <RippleButton
+                         onClick={() => optimizeResume(app.id)}
+                         disabled={isAnalyzing}
+                         className="py-1 px-3 text-[10px] bg-p3cyan/10 text-p3cyan border border-p3cyan/30 hover:bg-p3cyan/20 transition-all flex items-center gap-1"
+                       >
+                         <Sparkles size={10} /> {isAnalyzing ? 'Analyzing...' : 'Analyze Fit'}
+                       </RippleButton>
+                       <span className="px-2 py-0.5 rounded-full text-[10px] cinematic-text" style={{background: s.bg, color: s.color}}>{app.status}</span>
+                     </div>
                    </div>
                  );
                })}
@@ -364,6 +392,10 @@ const EmployerView = ({ data }) => {
   const [editingJob, setEditingJob] = useState(null);
   const [appPage, setAppPage] = useState(0);
   const [appTotalPages, setAppTotalPages] = useState(0);
+  const [screeningResult, setScreeningResult] = useState(null);
+  const [guideResult, setGuideResult] = useState(null);
+  const [isScreening, setIsScreening] = useState(false);
+  const [isGuiding, setIsGuiding] = useState(false);
   const APP_PAGE_SIZE = 5;
 
   const filteredByJob = (() => {
@@ -451,6 +483,30 @@ const EmployerView = ({ data }) => {
     }
   };
 
+  const runAiScreening = async (jobId) => {
+    setIsScreening(true);
+    try {
+      const res = await api.get(`/applications/job/${jobId}/screen`);
+      setScreeningResult(res.data);
+    } catch (err) {
+      toast.error('AI Screening failed: ' + safeError(err));
+    } finally {
+      setIsScreening(false);
+    }
+  };
+
+  const generateGuide = async (appId) => {
+    setIsGuiding(true);
+    try {
+      const res = await api.get(`/applications/${appId}/interview-guide`);
+      setGuideResult(res.data);
+    } catch (err) {
+      toast.error('AI Guide generation failed: ' + safeError(err));
+    } finally {
+      setIsGuiding(false);
+    }
+  };
+
   const handleEditJob = (job) => {
     setEditingJob(job);
     setShowPostJobModal(true);
@@ -484,6 +540,8 @@ const EmployerView = ({ data }) => {
         job={editingJob}
         isEdit={!!editingJob}
       />
+      <AiScreeningResult results={screeningResult} onClose={() => setScreeningResult(null)} />
+      <AiInterviewGuideResult guide={guideResult} onClose={() => setGuideResult(null)} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-12">
         <StatCard title="Active Job Postings" value={data.totalJobsPosted} icon={<Briefcase size={20}/>} color="124, 58, 237" onClick={() => handleCardClick('myjobs')} active={activeTab === 'myjobs'} />
@@ -513,6 +571,9 @@ const EmployerView = ({ data }) => {
                     <div className="flex items-center gap-4">
                        <div className="text-p3cyan font-medium text-sm">${job.salary?.toLocaleString()}</div>
                        <div className="flex gap-2">
+                        <RippleButton onClick={() => runAiScreening(job.id)} disabled={isScreening} className="py-1 px-3 text-[10px] bg-p3cyan/10 text-p3cyan border border-p3cyan/30 hover:bg-p3cyan/20 transition-all flex items-center gap-1">
+                          <Sparkles size={10} /> {isScreening ? 'Scanning...' : 'AI Screen'}
+                        </RippleButton>
                         <button className="p-1.5 rounded-full bg-white/5 text-white/60 hover:text-white transition-colors" onClick={() => handleEditJob(job)}><Pencil size={12} /></button>
                         <button className="p-1.5 rounded-full bg-white/5 text-red-400 hover:bg-red-400/20 transition-colors" onClick={() => handleDeleteJob(job)}><Trash size={12} /></button>
                        </div>
@@ -572,6 +633,9 @@ const EmployerView = ({ data }) => {
                                 {app.status === 'REVIEWED' && <RippleButton onClick={() => updateStatus(app.id, 'interview')} className="py-1 px-2 text-[10px]">Interview</RippleButton>}
                                 {app.status === 'INTERVIEWING' && <RippleButton onClick={() => updateStatus(app.id, 'accept')} className="py-1 px-2 text-[10px] bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Accept</RippleButton>}
                                 {app.status !== 'ACCEPTED' && app.status !== 'REJECTED' && <RippleButton onClick={() => updateStatus(app.id, 'reject')} className="py-1 px-2 text-[10px] bg-red-500/20 text-red-400 border-red-500/30">Reject</RippleButton>}
+                                <RippleButton onClick={() => generateGuide(app.id)} disabled={isGuiding} className="py-1 px-2 text-[10px] bg-p3cyan/10 text-p3cyan border-p3cyan/30 flex items-center gap-1">
+                                  <Sparkles size={10} /> {isGuiding ? '...' : 'AI Guide'}
+                                </RippleButton>
                                 <button className="p-1.5 rounded-full bg-white/5 text-white/60 hover:text-white transition-colors" onClick={() => downloadResume(app.id)}><FileText size={12} /></button>
                                 <button className="p-1.5 rounded-full bg-white/5 text-red-400/60 hover:bg-red-400/20 transition-colors" onClick={() => removeApplication(app.id)}><Trash size={12} /></button>
                               </div>
