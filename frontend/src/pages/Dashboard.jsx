@@ -172,7 +172,7 @@ const CandidateView = ({ data }) => {
     if (loadingApps) return;
     setLoadingApps(true);
     try {
-      const res = await api.get(` /applications/my?page=${page}&size=${APP_PAGE_SIZE}`);
+      const res = await api.get(`/applications/my?page=${page}&size=${APP_PAGE_SIZE}`);
       setApplications(res.data.content || []);
       setAppTotalPages(res.data.totalPages || 0);
       setAppPage(page);
