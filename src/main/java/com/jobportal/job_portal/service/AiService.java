@@ -8,13 +8,14 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 @Service
 public class AiService {
 
     private final RestTemplate restTemplate;
 
-    @Value("${CLAUDE_API_KEY:your-api-key}")
+    @Value("${OPENAI_API_KEY:your-api-key}")
     private String apiKey;
 
     public AiService(RestTemplate restTemplate) {
@@ -22,15 +23,14 @@ public class AiService {
     }
 
     public AiAnalysisResponse analyzeResume(String resumeText, String jobTitle, String jobRequirements) {
-        String url = "https://api.anthropic.com/v1/messages";
+        String url = "https://api.openai.com/v1/chat/completions";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("x-api-key", apiKey);
-        headers.set("anthropic-version", "2023-06-01");
+        headers.set("Authorization", "Bearer " + apiKey);
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "claude-3-sonnet-20240229");
+        requestBody.put("model", "gpt-4o");
         requestBody.put("max_tokens", 1024);
 
         String systemPrompt = "You are an expert technical recruiter. Analyze the provided resume against the job requirements. " +
@@ -40,8 +40,8 @@ public class AiService {
         String userPrompt = String.format("Job Title: %s\nRequirements: %s\n\nResume Text:\n%s",
                 jobTitle, jobRequirements, resumeText);
 
-        requestBody.put("system", systemPrompt);
-        requestBody.put("messages", java.util.List.of(
+        requestBody.put("messages", List.of(
+            Map.of("role", "system", "content", systemPrompt),
             Map.of("role", "user", "content", userPrompt)
         ));
 
@@ -49,7 +49,8 @@ public class AiService {
 
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
-            String content = (String) ((Map) response.getBody().get("content")).get("text");
+            List<Map> choices = (List<Map>) response.getBody().get("choices");
+            String content = (String) ((Map) choices.get(0).get("message")).get("content");
 
             return parseAiJson(content);
         } catch (Exception e) {
@@ -58,15 +59,14 @@ public class AiService {
     }
 
     public com.jobportal.job_portal.dto.AiScreeningResponse screenApplicant(String candidateName, String resumeText, String jobTitle, String jobRequirements, Long applicationId) {
-        String url = "https://api.anthropic.com/v1/messages";
+        String url = "https://api.openai.com/v1/chat/completions";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("x-api-key", apiKey);
-        headers.set("anthropic-version", "2023-06-01");
+        headers.set("Authorization", "Bearer " + apiKey);
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "claude-3-sonnet-20240229");
+        requestBody.put("model", "gpt-4o");
         requestBody.put("max_tokens", 512);
 
         String systemPrompt = "You are an expert technical recruiter. Evaluate this candidate for the given role. " +
@@ -76,8 +76,8 @@ public class AiService {
         String userPrompt = String.format("Candidate: %s\nJob Title: %s\nRequirements: %s\n\nResume Text:\n%s",
                 candidateName, jobTitle, jobRequirements, resumeText);
 
-        requestBody.put("system", systemPrompt);
-        requestBody.put("messages", java.util.List.of(
+        requestBody.put("messages", List.of(
+            Map.of("role", "system", "content", systemPrompt),
             Map.of("role", "user", "content", userPrompt)
         ));
 
@@ -85,7 +85,8 @@ public class AiService {
 
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
-            String content = (String) ((Map) response.getBody().get("content")).get("text");
+            List<Map> choices = (List<Map>) response.getBody().get("choices");
+            String content = (String) ((Map) choices.get(0).get("message")).get("content");
             String cleanedJson = content.replace("```json", "").replace("```", "").trim();
 
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
@@ -103,15 +104,14 @@ public class AiService {
     }
 
     public com.jobportal.job_portal.dto.AiInterviewGuideResponse generateInterviewGuide(String candidateName, String resumeText, String jobTitle, String jobRequirements) {
-        String url = "https://api.anthropic.com/v1/messages";
+        String url = "https://api.openai.com/v1/chat/completions";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("x-api-key", apiKey);
-        headers.set("anthropic-version", "2023-06-01");
+        headers.set("Authorization", "Bearer " + apiKey);
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "claude-3-sonnet-20240229");
+        requestBody.put("model", "gpt-4o");
         requestBody.put("max_tokens", 1024);
 
         String systemPrompt = "You are an expert technical recruiter. Based on the candidate's resume and the job requirements, " +
@@ -122,8 +122,8 @@ public class AiService {
         String userPrompt = String.format("Candidate: %s\nJob Title: %s\nRequirements: %s\n\nResume Text:\n%s",
                 candidateName, jobTitle, jobRequirements, resumeText);
 
-        requestBody.put("system", systemPrompt);
-        requestBody.put("messages", java.util.List.of(
+        requestBody.put("messages", List.of(
+            Map.of("role", "system", "content", systemPrompt),
             Map.of("role", "user", "content", userPrompt)
         ));
 
@@ -131,7 +131,8 @@ public class AiService {
 
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
-            String content = (String) ((Map) response.getBody().get("content")).get("text");
+            List<Map> choices = (List<Map>) response.getBody().get("choices");
+            String content = (String) ((Map) choices.get(0).get("message")).get("content");
             String cleanedJson = content.replace("```json", "").replace("```", "").trim();
 
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();

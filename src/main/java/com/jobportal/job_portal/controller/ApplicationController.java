@@ -3,6 +3,8 @@ package com.jobportal.job_portal.controller;
 import com.jobportal.job_portal.dto.CandidateApplicationDTO;
 import com.jobportal.job_portal.dto.ApplicationResponseDTO;
 import com.jobportal.job_portal.dto.AiAnalysisResponse;
+import com.jobportal.job_portal.dto.AiScreeningResponse;
+import com.jobportal.job_portal.dto.AiInterviewGuideResponse;
 import com.jobportal.job_portal.model.*;
 import com.jobportal.job_portal.repository.*;
 import com.jobportal.job_portal.service.EmailService;
