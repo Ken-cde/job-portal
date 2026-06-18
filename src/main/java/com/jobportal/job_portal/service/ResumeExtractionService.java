@@ -14,7 +14,7 @@ public class ResumeExtractionService {
     public String extractText(Resource resource) {
         try (InputStream inputStream = resource.getInputStream()) {
             return tika.parseToString(inputStream);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to extract text from resume: " + e.getMessage());
         }
     }
