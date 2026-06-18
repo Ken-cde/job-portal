@@ -26,7 +26,7 @@ const GlassPanel = ({ children, className = '', angle = 0, opacity = '0.03', glo
 
       <div className={`relative z-10 ${shape !== 'rect' ? 'px-6 md:px-12' : ''}`}>
         {children}
-      </div>
+      </div>>
     </motion.div>
   );
 };
