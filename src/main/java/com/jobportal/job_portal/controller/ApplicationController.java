@@ -150,7 +150,7 @@ public class ApplicationController {
                 ));
     }
 
-    @PostMapping("/optimize")
+    @GetMapping("/optimize")
     public ResponseEntity<?> optimizeResume(@RequestParam Long applicationId, Authentication auth) {
         try {
             Application app = applicationRepository.findById(applicationId)
