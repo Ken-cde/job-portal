@@ -49,7 +49,7 @@ const ResumeAnalysisResult = ({ analysis, onClose }) => {
                 <CheckCircle size={14} /> Strengths
               </div>
               <div className="space-y-2">
-                {analysis.strengths.map((s, i) => (
+                {(analysis.strengths || []).map((s, i) => (
                   <div key={i} className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-white/80 text-sm">
                     {s}
                   </div>
@@ -63,7 +63,7 @@ const ResumeAnalysisResult = ({ analysis, onClose }) => {
                 <AlertCircle size={14} /> Critical Gaps
               </div>
               <div className="space-y-2">
-                {analysis.gaps.map((g, i) => (
+                {(analysis.gaps || []).map((g, i) => (
                   <div key={i} className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-white/80 text-sm">
                     {g}
                   </div>
@@ -78,7 +78,7 @@ const ResumeAnalysisResult = ({ analysis, onClose }) => {
               <Lightbulb size={14} /> Strategic Improvements
             </div>
             <div className="space-y-3">
-              {analysis.suggestions.map((s, i) => (
+              {(analysis.suggestions || []).map((s, i) => (
                 <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/10 text-white/70 text-sm leading-relaxed group hover:bg-white/10 transition-all">
                   <span className="text-p3cyan font-bold mr-2">{i + 1}.</span> {s}
                 </div>

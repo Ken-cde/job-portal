@@ -40,7 +40,7 @@ const AiInterviewGuideResult = ({ guide, onClose }) => {
           <div className="space-y-4">
             <div className="text-white/40 cinematic-text text-xs uppercase tracking-widest mb-4">Tailored Probing Questions</div>
             <div className="space-y-3">
-              {guide.targetedQuestions.map((q, i) => (
+              {(guide.targetedQuestions || []).map((q, i) => (
                 <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/10 group hover:bg-white/10 transition-all flex items-start gap-4">
                   <div className="text-p3cyan font-black text-sm mt-0.5">{i + 1}.</div>
                   <div className="text-white/70 text-sm leading-relaxed group-hover:text-white transition-colors">

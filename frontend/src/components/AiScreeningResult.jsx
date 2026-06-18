@@ -30,7 +30,7 @@ const AiScreeningResult = ({ results, onClose }) => {
           </div>
 
           <div className="space-y-4">
-            {results.map((res, i) => (
+            {(results || []).map((res, i) => (
               <div key={res.applicationId} className="p-4 rounded-xl bg-white/5 border border-white/10 group hover:bg-white/10 transition-all flex items-center gap-6">
                 <div className="flex-shrink-0 w-14 h-14 rounded-full bg-p3cyan/10 border border-p3cyan/30 flex items-center justify-center text-p3cyan font-black text-xl italic">
                   {Math.round(res.score)}%
