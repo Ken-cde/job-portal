@@ -26,9 +26,6 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @Column(columnDefinition = "vector(1536)")
-    private float[] embedding;
-
     private String bio;
 
     public User() {}
@@ -71,14 +68,6 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
-    }
-
-    public float[] getEmbedding() {
-        return embedding;
-    }
-
-    public void setEmbedding(float[] embedding) {
-        this.embedding = embedding;
     }
 
     public String getBio() {
