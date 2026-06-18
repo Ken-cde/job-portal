@@ -76,7 +76,7 @@ const ResumeAnalysisResult = ({ analysis, onClose }) => {
           <div className="space-y-4 pt-6 border-t border-white/10">
             <div className="flex items-center gap-2 text-p3cyan cinematic-text text-xs uppercase tracking-widest">
               <Lightbulb size={14} /> Strategic Improvements
-            </div}
+            </div>
             <div className="space-y-3">
               {(analysis.suggestions || []).map((s, i) => (
                 <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/10 text-white/70 text-sm leading-relaxed group hover:bg-white/10 transition-all">
