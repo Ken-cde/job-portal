@@ -315,7 +315,7 @@ const CandidateView = ({ data }) => {
                      </div>
                      <div className="flex items-center gap-3">
                        <RippleButton
-                         onClick={() => optimizeResume(app.id)}
+                         onClick={() => optimizeResume(app.applicationId)}
                          disabled={isAnalyzing}
                          className="py-1 px-3 text-[10px] bg-p3cyan/10 text-p3cyan border border-p3cyan/30 hover:bg-p3cyan/20 transition-all flex items-center gap-1"
                        >

@@ -142,6 +142,7 @@ public class ApplicationController {
 
         return applicationRepository.findByUser(user, pageable)
                 .map(app -> new CandidateApplicationDTO(
+                        app.getId(),
                         app.getJob().getId(),
                         app.getJob().getTitle(),
                         app.getJob().getCompany(),
