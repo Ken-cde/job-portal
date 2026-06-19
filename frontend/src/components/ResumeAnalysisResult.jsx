@@ -28,7 +28,7 @@ const ResumeAnalysisResult = ({ analysis, onClose }) => {
           <button onClick={onClose} className="text-white/40 hover:text-white transition-colors text-2xl">×</button>
         </div>
 
-        <div className="p-8 overflow-y-auto flex-1 min-h-0 space-y-8">
+        <div className="p-8 overflow-y-auto flex-1 min-h-0 space-y-8 custom-scrollbar" style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
           {/* Match Score */}
           <div className="flex flex-col items-center justify-center py-6">
             <div className="relative flex items-center justify-center">
