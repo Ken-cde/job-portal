@@ -9,8 +9,8 @@ const ResumeAnalysisResult = ({ analysis, onClose }) => {
   return (
     <div className="fixed inset-0 z-[1100] bg-black/80 backdrop-blur-md flex items-center justify-center p-6" onClick={onClose}>
       <GlassPanel
-        shape="trapezoid"
-        className="w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden relative"
+        shape="rect"
+        className="w-full max-w-2xl max-h-[90vh] flex flex-col relative"
         glow={true}
         onClick={e => e.stopPropagation()}
       >

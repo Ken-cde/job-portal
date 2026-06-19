@@ -24,7 +24,7 @@ const GlassPanel = ({ children, className = '', angle = 0, opacity = '0.03', glo
       {/* Subtle Inner Glow for depth */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
 
-      <div className={`relative z-10 ${shape !== 'rect' ? 'px-6 md:px-12' : ''}`}>
+      <div className={`relative z-10 flex flex-col h-full ${shape !== 'rect' ? 'px-6 md:px-12' : ''}`}>
         {children}
       </div>
     </motion.div>
