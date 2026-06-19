@@ -6,10 +6,17 @@ import { CheckCircle, AlertCircle, Lightbulb, X } from 'lucide-react';
 const ResumeAnalysisResult = ({ analysis, onClose }) => {
   useEffect(() => {
     if (analysis) {
+      // Total lock: prevent all background scrolling using multiple fail-safes
       document.body.style.overflow = 'hidden';
+      document.body.style.height = '100vh';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100vw';
     }
     return () => {
       document.body.style.overflow = 'unset';
+      document.body.style.height = 'auto';
+      document.body.style.position = 'static';
+      document.body.style.width = 'auto';
     };
   }, [analysis]);
 
