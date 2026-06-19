@@ -56,7 +56,7 @@ const ResumeAnalysisResult = ({ analysis, onClose }) => {
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-emerald-400 cinematic-text text-xs uppercase tracking-widest">
                 <CheckCircle size={14} /> Strengths
-              </div}
+              </div>
               <div className="space-y-2">
                 {(analysis.strengths || []).map((s, i) => (
                   <div key={i} className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-white/80 text-sm">
@@ -70,7 +70,7 @@ const ResumeAnalysisResult = ({ analysis, onClose }) => {
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-red-400 cinematic-text text-xs uppercase tracking-widest">
                 <AlertCircle size={14} /> Critical Gaps
-              </div}
+              </div>
               <div className="space-y-2">
                 {(analysis.gaps || []).map((g, i) => (
                   <div key={i} className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-white/80 text-sm">
@@ -85,7 +85,7 @@ const ResumeAnalysisResult = ({ analysis, onClose }) => {
           <div className="space-y-4 pt-6 border-t border-white/10">
             <div className="flex items-center gap-2 text-p3cyan cinematic-text text-xs uppercase tracking-widest">
               <Lightbulb size={14} /> Strategic Improvements
-            </div}
+            </div>
             <div className="space-y-3">
               {(analysis.suggestions || []).map((s, i) => (
                 <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/10 text-white/70 text-sm leading-relaxed group hover:bg-white/10 transition-all">
