@@ -18,7 +18,7 @@ public class AiService {
     @Value("${GOOGLE_API_KEY:${GEMINI_API_KEY:your-google-api-key}}")
     private String apiKey;
 
-    @Value("${GEMINI_MODEL:gemini-1.5-flash}")
+    @Value("${GEMINI_MODEL:gemini-2.0-flash}")
     private String model;
 
     public AiService(RestTemplate restTemplate) {
