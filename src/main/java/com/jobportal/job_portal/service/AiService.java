@@ -18,8 +18,10 @@ public class AiService {
     @Value("${GOOGLE_API_KEY:${GEMINI_API_KEY:your-google-api-key}}")
     private String apiKey;
 
-    @Value("${GEMINI_MODEL:gemini-2.0-flash}")
+    @Value("${GEMINI_MODEL:}")
     private String model;
+
+    private volatile String resolvedModel;
 
     private static final String[] FALLBACK_MODELS = new String[] {
             "gemini-2.0-flash",
@@ -130,8 +132,28 @@ public class AiService {
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
+        // First discover a model that is actually available for this key.
+        try {
+            String discovered = resolveAvailableModel();
+            if (discovered != null && !discovered.isBlank()) {
+                java.util.LinkedHashSet<String> discoveredSet = new java.util.LinkedHashSet<>();
+                discoveredSet.add(discovered.trim());
+                // Fall through and add configured + fallback models after.
+            }
+        } catch (Exception ignored) {
+            // Auto-discovery failed; fall back to configured/common models below.
+        }
+
         // Build a de-duplicated candidate list: configured model first, then common fallbacks.
         java.util.LinkedHashSet<String> modelCandidates = new java.util.LinkedHashSet<>();
+        try {
+            String discovered = resolveAvailableModel();
+            if (discovered != null && !discovered.isBlank()) {
+                modelCandidates.add(discovered.trim());
+            }
+        } catch (Exception ignored) {
+            // Auto-discovery failed; try configured + common models.
+        }
         if (model != null && !model.isBlank()) {
             modelCandidates.add(model.trim());
         }
@@ -185,5 +207,59 @@ public class AiService {
         String tried = String.join(", ", modelCandidates);
         String detail = lastError != null ? lastError.getMessage() : "unknown error";
         throw new RuntimeException("Gemini request failed (tried models: " + tried + "): " + detail);
+    }
+
+    private synchronized String resolveAvailableModel() {
+        if (resolvedModel != null && !resolvedModel.isBlank()) {
+            return resolvedModel;
+        }
+
+        if (apiKey == null || apiKey.isBlank() || apiKey.contains("your-google-api-key")) {
+            throw new RuntimeException("Google API key is missing or still using the default value");
+        }
+
+        try {
+            String encodedKey = java.net.URLEncoder.encode(apiKey, java.nio.charset.StandardCharsets.UTF_8);
+            String listUrl = "https://generativelanguage.googleapis.com/v1beta/models?key=" + encodedKey;
+            ResponseEntity<Map> response = restTemplate.getForEntity(listUrl, Map.class);
+            if (response.getBody() == null) {
+                throw new RuntimeException("Empty model list response from Gemini");
+            }
+
+            List<?> models = (List<?>) response.getBody().get("models");
+            if (models == null || models.isEmpty()) {
+                throw new RuntimeException("No Gemini models available for this API key");
+            }
+
+            for (Object obj : models) {
+                if (!(obj instanceof Map)) continue;
+                Map<?, ?> m = (Map<?, ?>) obj;
+                Object methods = m.get("supportedGenerationMethods");
+                if (!(methods instanceof List)) continue;
+                boolean supportsGenerate = false;
+                for (Object method : (List<?>) methods) {
+                    if ("generateContent".equals(String.valueOf(method))) {
+                        supportsGenerate = true;
+                        break;
+                    }
+                }
+                if (!supportsGenerate) continue;
+
+                String name = String.valueOf(m.get("name"));
+                if (name.startsWith("models/")) {
+                    name = name.substring("models/".length());
+                }
+                if (!name.isBlank()) {
+                    resolvedModel = name;
+                    return resolvedModel;
+                }
+            }
+
+            throw new RuntimeException("No Gemini model with generateContent support found");
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to list Gemini models: " + e.getMessage());
+        }
     }
 }
