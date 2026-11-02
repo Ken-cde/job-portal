@@ -153,14 +153,19 @@ public class EmailService {
     private String frontendUrl;
 
     public void sendPasswordResetEmail(String to, String username, String resetToken) {
+        sendPasswordResetEmail(to, username, resetToken, frontendUrl);
+    }
+
+    public void sendPasswordResetEmail(String to, String username, String resetToken, String baseUrl) {
         String subject = "Reset your JobPortal password";
-        String resetLink = frontendUrl.replaceAll("/+$", "") + "/reset-password?token=" + resetToken;
+        String resetLink = (baseUrl == null || baseUrl.isBlank() ? frontendUrl : baseUrl)
+                .replaceAll("/+$", "") + "/reset-password?token=" + resetToken;
         String body = String.format(
             "Hi %s,\n\n" +
             "We received a request to reset your JobPortal password.\n\n" +
             "Click the link below to set a new password:\n" +
             "%s\n\n" +
-            "This link expires in 15 minutes and can only be used once.\n\n" +
+            "This link expires in 30 minutes and can only be used once.\n\n" +
             "If you didn't request this, you can safely ignore this email — your password hasn't been changed.\n\n" +
             "Best regards,\n" +
             "The JobPortal Team",

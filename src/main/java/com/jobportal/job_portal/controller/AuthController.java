@@ -19,6 +19,9 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class AuthController {
 
+    @org.springframework.beans.factory.annotation.Value("${FRONTEND_URL:http://localhost:5173}")
+    private String frontendUrl;
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -98,7 +101,8 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body,
+                                           jakarta.servlet.http.HttpServletRequest request) {
         String email = body.get("email");
         if (email == null || email.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Email is required"));
@@ -112,7 +116,29 @@ public class AuthController {
 
         User user = userOpt.get();
         String resetToken = jwtUtil.generateResetToken(user.getEmail());
-        emailService.sendPasswordResetEmail(user.getEmail(), user.getUsername(), resetToken);
+
+        // Prefer the frontend origin that actually made the request (works in
+        // every environment without relying on a configured URL), and fall back
+        // to FRONTEND_URL when the request did not carry an origin.
+        String baseUrl = frontendUrl;
+        String origin = request.getHeader("Origin");
+        if (origin != null && !origin.isBlank()) {
+            baseUrl = origin.trim();
+        } else {
+            String referer = request.getHeader("Referer");
+            if (referer != null && !referer.isBlank()) {
+                try {
+                    java.net.URI uri = java.net.URI.create(referer);
+                    if (uri.getScheme() != null && uri.getHost() != null) {
+                        baseUrl = uri.getScheme() + "://" + uri.getHost()
+                                + (uri.getPort() > 0 ? ":" + uri.getPort() : "");
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
+        emailService.sendPasswordResetEmail(user.getEmail(), user.getUsername(), resetToken, baseUrl);
 
         return ResponseEntity.ok(Map.of("message", "If that email exists, a reset link has been sent"));
     }
