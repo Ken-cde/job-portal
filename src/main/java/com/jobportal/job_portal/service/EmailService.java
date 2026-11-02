@@ -149,9 +149,12 @@ public class EmailService {
         sendEmail(userEmail, subject, body);
     }
 
+    @Value("${FRONTEND_URL:http://localhost:5173}")
+    private String frontendUrl;
+
     public void sendPasswordResetEmail(String to, String username, String resetToken) {
         String subject = "Reset your JobPortal password";
-        String resetLink = "http://localhost:5173/reset-password?token=" + resetToken;
+        String resetLink = frontendUrl.replaceAll("/+$", "") + "/reset-password?token=" + resetToken;
         String body = String.format(
             "Hi %s,\n\n" +
             "We received a request to reset your JobPortal password.\n\n" +
