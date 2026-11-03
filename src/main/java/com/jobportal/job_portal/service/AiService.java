@@ -252,12 +252,45 @@ public class AiService {
             if (name.startsWith("models/")) {
                 name = name.substring("models/".length());
             }
-            if (!name.isBlank()) {
-                result.add(name);
+            if (name.isBlank()) continue;
+
+            String lower = name.toLowerCase(Locale.ROOT);
+
+            // Skip non-text / speciality models that may list generateContent
+            // but are not suitable or have zero free-tier quota for this use case.
+            if (lower.contains("tts") || lower.contains("image") || lower.contains("audio")
+                    || lower.contains("embedding") || lower.contains("vision")
+                    || lower.contains("banana") || lower.contains("lyria")
+                    || lower.contains("robotics") || lower.contains("transcribe")
+                    || lower.contains("computer-use") || lower.contains("antigravity")
+                    || lower.contains("deep-research")) {
+                continue;
             }
+
+            // Prefer standard Gemini text models.
+            if (!lower.startsWith("gemini")) {
+                continue;
+            }
+
+            // Only use generateContent-capable models (checked above).
+            result.add(name);
         }
 
-        return result;
+        // Prefer stable, text-focused models over previews or lite tiers.
+        result.sort((a, b) -> {
+            String la = a.toLowerCase(Locale.ROOT);
+            String lb = b.toLowerCase(Locale.ROOT);
+            boolean aPreview = la.contains("preview");
+            boolean bPreview = lb.contains("preview");
+            if (aPreview != bPreview) return aPreview ? 1 : -1;
+            boolean aFlash = la.contains("flash");
+            boolean bFlash = lb.contains("flash");
+            if (aFlash != bFlash) return aFlash ? -1 : 1;
+            return a.compareToIgnoreCase(b);
+        });
+
+        // Remove duplicate while preserving order.
+        return new ArrayList<>(new LinkedHashSet<>(result));
     }
 
     private String extractJsonObject(String text) {
