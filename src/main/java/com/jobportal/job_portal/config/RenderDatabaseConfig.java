@@ -14,7 +14,11 @@ public class RenderDatabaseConfig {
     @PostConstruct
     public void logDatasource() {
         System.out.println("[DB Config] URL: " + datasourceUrl);
-        if (datasourceUrl.contains("postgresql")) {
+        String lower = datasourceUrl.toLowerCase();
+        if (lower.contains("h2")) {
+            System.out.println("[DB Config] Detected: H2");
+            System.setProperty("spring.jpa.properties.hibernate.dialect", "org.hibernate.dialect.H2Dialect");
+        } else if (lower.contains("postgres")) {
             System.out.println("[DB Config] Detected: PostgreSQL");
             System.setProperty("spring.jpa.properties.hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
         } else {

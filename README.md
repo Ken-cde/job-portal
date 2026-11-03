@@ -13,18 +13,24 @@ A modern, full-stack, enterprise-grade job board application designed to connect
 ## 🛠️ Tech Stack & Technical Architecture
 
 ### Backend
-- **Core Framework**: Spring Boot 3.2 (Java 17)
+- **Core Framework**: Spring Boot 3.2 (Java 17 declared; Docker/Vercel builds use Java 21)
 - **Security Layer**: Spring Security 6 with stateless JSON Web Tokens (JWT) for secure authentication.
 - **ORM & Data Access**: Spring Data JPA & Hibernate
-- **Databases Supported**: MySQL 8 (Production) / PostgreSQL
-- **Notifications**: Spring Mail (automated SMTP notification dispatch)
+- **Databases Supported**: PostgreSQL (production), MySQL 8 (local/dev option)
+- **Notifications**: Spring Mail over Brevo SMTP (configurable SMTP provider)
 - **API UI**: Springdoc OpenAPI / Swagger UI
+- **Document Parsing**: Apache Tika 2.9.1 (resume text extraction)
+- **AI Analysis**: Google Gemini API (resume fit screening, applicant screening, interview guides)
+- **File Storage**: Supabase Storage (resume files)
+- **Productivity/HTTP**: Lombok, RestTemplate
+- **Deployment Runtime**: Docker multi-stage image (eclipse-temurin JDK/JRE 21)
 
 ### Frontend
 - **Framework**: React 19 (orchestrated with Vite)
-- **Styling**: Tailwind CSS (highly responsive, dynamic transitions)
+- **Styling**: Tailwind CSS v3 (highly responsive, dynamic transitions)
 - **Animations**: Framer Motion
 - **Icons**: Lucide React
+- **Smooth Scrolling**: Lenis
 - **HTTP Routing**: React Router Dom v7 & Axios client
 
 ---
