@@ -286,7 +286,7 @@ public class AiService {
             if (inString) {
                 if (escaping) {
                     escaping = false;
-                } else if (c == '\\\\') {
+                } else if (c == '\\') {
                     escaping = true;
                 } else if (c == '"') {
                     inString = false;
