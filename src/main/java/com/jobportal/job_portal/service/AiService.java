@@ -6,9 +6,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class AiService {
@@ -19,18 +17,25 @@ public class AiService {
     private String apiKey;
 
     @Value("${GEMINI_MODEL:}")
-    private String model;
+    private String configuredModel;
 
     private volatile String resolvedModel;
+    private volatile String resolvedApiVersion;
 
     private static final String[] FALLBACK_MODELS = new String[] {
+            "gemini-2.5-flash",
+            "gemini-2.5-flash-lite",
             "gemini-2.0-flash",
             "gemini-2.0-flash-lite",
             "gemini-1.5-flash",
             "gemini-1.5-flash-latest",
             "gemini-1.5-flash-002",
-            "gemini-1.5-pro"
+            "gemini-1.5-pro",
+            "gemini-flash-latest",
+            "gemini-pro-latest"
     };
+
+    private static final String[] API_VERSIONS = new String[] {"v1", "v1beta"};
 
     public AiService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -46,7 +51,6 @@ public class AiService {
 
         String content = callGemini(systemPrompt, userPrompt, 1024);
 
-        // Basic cleaning of AI response (removes markdown code blocks if present)
         String cleanedJson = content.replace("```json", "").replace("```", "").trim();
 
         try {
@@ -113,153 +117,144 @@ public class AiService {
             throw new RuntimeException("Google API key is missing or still using the default value");
         }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("x-goog-api-key", apiKey);
-
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("system_instruction", Map.of(
-                "parts", List.of(Map.of("text", systemPrompt))
-        ));
-        requestBody.put("contents", List.of(
-                Map.of("parts", List.of(Map.of("text", userPrompt)))
-        ));
-        requestBody.put("generationConfig", Map.of(
-                "maxOutputTokens", maxOutputTokens,
-                "temperature", 0.2,
-                "responseMimeType", "application/json"
-        ));
-
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-
-        // First discover a model that is actually available for this key.
+        // Candidate models: configured first, then discovered models, then common fallbacks.
+        LinkedHashSet<String> candidateModels = new LinkedHashSet<>();
+        if (configuredModel != null && !configuredModel.isBlank()) {
+            candidateModels.add(configuredModel.trim());
+        }
+        if (resolvedModel != null && !resolvedModel.isBlank()) {
+            candidateModels.add(resolvedModel.trim());
+        }
         try {
-            String discovered = resolveAvailableModel();
-            if (discovered != null && !discovered.isBlank()) {
-                java.util.LinkedHashSet<String> discoveredSet = new java.util.LinkedHashSet<>();
-                discoveredSet.add(discovered.trim());
-                // Fall through and add configured + fallback models after.
+            for (String discovered : discoverModels()) {
+                if (discovered != null && !discovered.isBlank()) {
+                    candidateModels.add(discovered.trim());
+                }
             }
         } catch (Exception ignored) {
-            // Auto-discovery failed; fall back to configured/common models below.
-        }
-
-        // Build a de-duplicated candidate list: configured model first, then common fallbacks.
-        java.util.LinkedHashSet<String> modelCandidates = new java.util.LinkedHashSet<>();
-        try {
-            String discovered = resolveAvailableModel();
-            if (discovered != null && !discovered.isBlank()) {
-                modelCandidates.add(discovered.trim());
-            }
-        } catch (Exception ignored) {
-            // Auto-discovery failed; try configured + common models.
-        }
-        if (model != null && !model.isBlank()) {
-            modelCandidates.add(model.trim());
+            // Discovery is best-effort; fall through to configured/fallback models.
         }
         for (String m : FALLBACK_MODELS) {
             if (m != null && !m.isBlank()) {
-                modelCandidates.add(m);
+                candidateModels.add(m);
             }
         }
 
+        List<String> tried = new ArrayList<>();
         Exception lastError = null;
-        for (String candidateModel : modelCandidates) {
-            String url = String.format("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent", candidateModel);
-            try {
-                ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
-                if (response.getBody() == null) {
-                    throw new RuntimeException("Empty response from Gemini for model " + candidateModel);
-                }
 
-                List<?> candidates = (List<?>) response.getBody().get("candidates");
-                if (candidates == null || candidates.isEmpty()) {
-                    throw new RuntimeException("No candidates returned by Gemini for model " + candidateModel);
-                }
+        for (String candidateModel : candidateModels) {
+            for (String apiVersion : API_VERSIONS) {
+                String url = String.format("https://generativelanguage.googleapis.com/%s/models/%s:generateContent",
+                        apiVersion, candidateModel);
+                tried.add(apiVersion + ":" + candidateModel);
 
-                Map<?, ?> candidate = (Map<?, ?>) candidates.get(0);
-                Map<?, ?> contentObj = (Map<?, ?>) candidate.get("content");
-                if (contentObj == null) {
-                    throw new RuntimeException("Gemini response had no content for model " + candidateModel);
-                }
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.set("x-goog-api-key", apiKey);
 
-                List<?> parts = (List<?>) contentObj.get("parts");
-                if (parts == null || parts.isEmpty()) {
-                    throw new RuntimeException("Gemini response had no parts for model " + candidateModel);
-                }
+                Map<String, Object> requestBody = new HashMap<>();
+                // Use camelCase field names expected by the REST API.
+                requestBody.put("systemInstruction", Map.of(
+                        "parts", List.of(Map.of("text", systemPrompt))
+                ));
+                requestBody.put("contents", List.of(
+                        Map.of("parts", List.of(Map.of("text", userPrompt)))
+                ));
+                requestBody.put("generationConfig", Map.of(
+                        "maxOutputTokens", maxOutputTokens,
+                        "temperature", 0.2
+                ));
 
-                Object text = ((Map<?, ?>) parts.get(0)).get("text");
-                if (text == null) {
-                    throw new RuntimeException("Gemini response text was empty for model " + candidateModel);
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+                try {
+                    ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
+                    if (response.getBody() == null) {
+                        throw new RuntimeException("Empty response from Gemini");
+                    }
+
+                    List<?> candidates = (List<?>) response.getBody().get("candidates");
+                    if (candidates == null || candidates.isEmpty()) {
+                        throw new RuntimeException("No candidates returned by Gemini");
+                    }
+
+                    Map<?, ?> candidate = (Map<?, ?>) candidates.get(0);
+                    Map<?, ?> contentObj = (Map<?, ?>) candidate.get("content");
+                    if (contentObj == null) {
+                        throw new RuntimeException("Gemini response had no content");
+                    }
+
+                    List<?> parts = (List<?>) contentObj.get("parts");
+                    if (parts == null || parts.isEmpty()) {
+                        throw new RuntimeException("Gemini response had no parts");
+                    }
+
+                    Object text = ((Map<?, ?>) parts.get(0)).get("text");
+                    if (text == null) {
+                        throw new RuntimeException("Gemini response text was empty");
+                    }
+
+                    resolvedModel = candidateModel;
+                    resolvedApiVersion = apiVersion;
+                    return String.valueOf(text);
+                } catch (Exception e) {
+                    String msg = String.valueOf(e.getMessage());
+                    // Fail fast for auth/permission issues (same for every model/version).
+                    if (msg.contains("401") || msg.contains("403")
+                            || msg.toLowerCase().contains("api key")
+                            || msg.toLowerCase().contains("permission")) {
+                        throw new RuntimeException("Gemini request failed: " + msg);
+                    }
+                    lastError = e;
                 }
-                return String.valueOf(text);
-            } catch (Exception e) {
-                String msg = String.valueOf(e.getMessage());
-                // Fail fast for auth/permission issues; otherwise try next model.
-                if (msg.contains("401") || msg.contains("403")
-                        || msg.toLowerCase().contains("api key") || msg.toLowerCase().contains("permission")) {
-                    throw new RuntimeException("Gemini request failed: " + msg);
-                }
-                lastError = e;
             }
         }
 
-        String tried = String.join(", ", modelCandidates);
         String detail = lastError != null ? lastError.getMessage() : "unknown error";
-        throw new RuntimeException("Gemini request failed (tried models: " + tried + "): " + detail);
+        throw new RuntimeException("Gemini request failed (tried: " + String.join(", ", tried) +
+                "; resolved=" + (resolvedModel == null ? "none" : resolvedModel) + "): " + detail);
     }
 
-    private synchronized String resolveAvailableModel() {
-        if (resolvedModel != null && !resolvedModel.isBlank()) {
-            return resolvedModel;
+    private List<String> discoverModels() {
+        List<String> result = new ArrayList<>();
+        String encodedKey = java.net.URLEncoder.encode(apiKey, java.nio.charset.StandardCharsets.UTF_8);
+        String listUrl = "https://generativelanguage.googleapis.com/v1beta/models?key=" + encodedKey;
+
+        ResponseEntity<Map> response = restTemplate.getForEntity(listUrl, Map.class);
+        if (response.getBody() == null) {
+            return result;
         }
 
-        if (apiKey == null || apiKey.isBlank() || apiKey.contains("your-google-api-key")) {
-            throw new RuntimeException("Google API key is missing or still using the default value");
+        List<?> models = (List<?>) response.getBody().get("models");
+        if (models == null) {
+            return result;
         }
 
-        try {
-            String encodedKey = java.net.URLEncoder.encode(apiKey, java.nio.charset.StandardCharsets.UTF_8);
-            String listUrl = "https://generativelanguage.googleapis.com/v1beta/models?key=" + encodedKey;
-            ResponseEntity<Map> response = restTemplate.getForEntity(listUrl, Map.class);
-            if (response.getBody() == null) {
-                throw new RuntimeException("Empty model list response from Gemini");
-            }
+        for (Object obj : models) {
+            if (!(obj instanceof Map)) continue;
+            Map<?, ?> m = (Map<?, ?>) obj;
+            Object methods = m.get("supportedGenerationMethods");
+            if (!(methods instanceof List)) continue;
 
-            List<?> models = (List<?>) response.getBody().get("models");
-            if (models == null || models.isEmpty()) {
-                throw new RuntimeException("No Gemini models available for this API key");
-            }
-
-            for (Object obj : models) {
-                if (!(obj instanceof Map)) continue;
-                Map<?, ?> m = (Map<?, ?>) obj;
-                Object methods = m.get("supportedGenerationMethods");
-                if (!(methods instanceof List)) continue;
-                boolean supportsGenerate = false;
-                for (Object method : (List<?>) methods) {
-                    if ("generateContent".equals(String.valueOf(method))) {
-                        supportsGenerate = true;
-                        break;
-                    }
-                }
-                if (!supportsGenerate) continue;
-
-                String name = String.valueOf(m.get("name"));
-                if (name.startsWith("models/")) {
-                    name = name.substring("models/".length());
-                }
-                if (!name.isBlank()) {
-                    resolvedModel = name;
-                    return resolvedModel;
+            boolean supportsGenerate = false;
+            for (Object method : (List<?>) methods) {
+                if ("generateContent".equals(String.valueOf(method))) {
+                    supportsGenerate = true;
+                    break;
                 }
             }
+            if (!supportsGenerate) continue;
 
-            throw new RuntimeException("No Gemini model with generateContent support found");
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to list Gemini models: " + e.getMessage());
+            String name = String.valueOf(m.get("name"));
+            if (name.startsWith("models/")) {
+                name = name.substring("models/".length());
+            }
+            if (!name.isBlank()) {
+                result.add(name);
+            }
         }
+
+        return result;
     }
 }
