@@ -163,7 +163,8 @@ public class AiService {
                 ));
                 requestBody.put("generationConfig", Map.of(
                         "maxOutputTokens", maxOutputTokens,
-                        "temperature", 0.2
+                        "temperature", 0.2,
+                        "responseMimeType", "application/json"
                 ));
 
                 HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
