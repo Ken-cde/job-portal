@@ -51,13 +51,13 @@ public class AiService {
 
         String content = callGemini(systemPrompt, userPrompt, 1024);
 
-        String cleanedJson = content.replace("```json", "").replace("```", "").trim();
+        String cleanedJson = extractJsonObject(content);
 
         try {
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             return mapper.readValue(cleanedJson, AiAnalysisResponse.class);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse AI JSON response: " + e.getMessage());
+            throw new RuntimeException("Failed to parse AI JSON response: " + e.getMessage() + " (raw: " + truncate(content, 300) + ")");
         }
     }
 
@@ -71,7 +71,7 @@ public class AiService {
 
         try {
             String content = callGemini(systemPrompt, userPrompt, 512);
-            String cleanedJson = content.replace("```json", "").replace("```", "").trim();
+            String cleanedJson = extractJsonObject(content);
 
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             Map<String, Object> result = mapper.readValue(cleanedJson, Map.class);
@@ -98,7 +98,7 @@ public class AiService {
 
         try {
             String content = callGemini(systemPrompt, userPrompt, 1024);
-            String cleanedJson = content.replace("```json", "").replace("```", "").trim();
+            String cleanedJson = extractJsonObject(content);
 
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             com.jobportal.job_portal.dto.AiInterviewGuideResponse guide = mapper.readValue(cleanedJson, com.jobportal.job_portal.dto.AiInterviewGuideResponse.class);
@@ -257,5 +257,60 @@ public class AiService {
         }
 
         return result;
+    }
+
+    private String extractJsonObject(String text) {
+        if (text == null || text.isBlank()) {
+            throw new RuntimeException("Empty AI response");
+        }
+
+        int fenceStart = text.indexOf("```json");
+        if (fenceStart >= 0) {
+            int contentStart = text.indexOf('{', fenceStart);
+            int contentEnd = text.lastIndexOf('}');
+            if (contentStart >= 0 && contentEnd > contentStart) {
+                return text.substring(contentStart, contentEnd + 1).trim();
+            }
+        }
+
+        int start = text.indexOf('{');
+        if (start < 0) {
+            throw new RuntimeException("No JSON object found in AI response");
+        }
+
+        int depth = 0;
+        boolean inString = false;
+        boolean escaping = false;
+        for (int i = start; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (inString) {
+                if (escaping) {
+                    escaping = false;
+                } else if (c == '\\\\') {
+                    escaping = true;
+                } else if (c == '"') {
+                    inString = false;
+                }
+                continue;
+            }
+
+            if (c == '"') {
+                inString = true;
+            } else if (c == '{') {
+                depth++;
+            } else if (c == '}') {
+                depth--;
+                if (depth == 0) {
+                    return text.substring(start, i + 1).trim();
+                }
+            }
+        }
+
+        throw new RuntimeException("Unterminated JSON object in AI response");
+    }
+
+    private String truncate(String text, int max) {
+        if (text == null) return null;
+        return text.length() <= max ? text : text.substring(0, max) + "...";
     }
 }
