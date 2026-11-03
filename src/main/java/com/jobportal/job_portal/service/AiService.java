@@ -196,6 +196,7 @@ public class AiService {
                         throw new RuntimeException("Gemini response text was empty");
                     }
 
+                    System.err.println("AI raw response preview (" + candidateModel + "/" + apiVersion + "): " + truncate(String.valueOf(text), 1000));
                     resolvedModel = candidateModel;
                     resolvedApiVersion = apiVersion;
                     return String.valueOf(text);
@@ -275,6 +276,7 @@ public class AiService {
 
         int start = text.indexOf('{');
         if (start < 0) {
+            System.err.println("AI response contained no JSON object. Raw preview: " + truncate(text, 1000));
             throw new RuntimeException("No JSON object found in AI response");
         }
 
